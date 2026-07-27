@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物控科 2026 Q2 复盘互评系统</title>
+<style>
+:root {
+  --primary: #1a3a5c;
+  --primary-light: #2d5f8a;
+  --primary-bg: #eef4f9;
+  --success: #2e7d32;
+  --success-bg: #e8f5e9;
+  --warning: #e65100;
+  --warning-bg: #fff3e0;
+  --danger: #c62828;
+  --danger-bg: #ffebee;
+  --gray-50: #f7f9fb;
+  --gray-100: #f0f2f5;
+  --gray-200: #e0e4e8;
+  --gray-300: #ccc;
+  --gray-500: #888;
+  --gray-700: #555;
+  --gray-900: #333;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-900);
+  line-height: 1.6;
+}
+
+/* ===== STANDALONE BANNER ===== */
+.standalone-banner {
+  background:var(--warning-bg); color:var(--warning); padding:8px 16px;
+  font-size:12px; text-align:center; border-bottom:1px solid rgba(230,81,0,0.2);
+}
+
+/* ===== LOGIN ===== */
+#loginView {
+  min-height:100vh; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  padding: 24px; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+}
+.login-header {
+  text-align:center; color:#fff; margin-top:32px; margin-bottom:20px;
+}
+.login-header h2 { font-size:22px; font-weight:700; margin-bottom:4px; }
+.login-header .login-sub { font-size:13px; opacity:0.85; }
+
+.login-section {
+  background:#fff; border-radius:12px; padding:20px 24px; width:100%; max-width:720px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.15); margin-bottom:16px;
+}
+.login-section .ls-title {
+  font-size:14px; font-weight:700; color:var(--gray-700); margin-bottom:12px;
+  display:flex; align-items:center; gap:6px;
+}
+
+.name-grid {
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;
+}
+.name-card {
+  padding:12px 10px; border:2px solid var(--gray-200); border-radius:8px;
+  cursor:pointer; text-align:center; transition:all 0.15s; background:#fff; user-select:none;
+}
+.name-card .nc-name { font-size:14px; font-weight:700; color:var(--gray-900); }
+.name-card .nc-cat { font-size:11px; color:var(--gray-500); margin-top:2px; }
+.name-card:hover { border-color:var(--primary-light); background:var(--primary-bg); }
+.name-card.selected {
+  border-color:var(--primary); background:var(--primary-bg); color:var(--primary);
+  box-shadow:0 2px 12px rgba(26,58,92,0.15);
+}
+.name-card.selected .nc-name { color:var(--primary); }
+
+.leader-card {
+  padding:14px 20px; border:2px solid var(--warning); border-radius:8px;
+  cursor:pointer; text-align:center; transition:all 0.15s; background:var(--warning-bg);
+  user-select:none; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.leader-card .lc-text { font-size:14px; font-weight:700; color:var(--warning); }
+.leader-card:hover { border-color:var(--danger); }
+.leader-card.selected {
+  border-color:var(--danger); background:var(--danger); color:#fff;
+  box-shadow:0 2px 12px rgba(198,40,40,0.15);
+}
+.leader-card.selected .lc-text { color:#fff; }
+
+.custom-name-row {
+  display:flex; gap:10px; align-items:center;
+}
+.custom-name-row input {
+  flex:1; padding:12px 14px; border:1.5px solid var(--gray-200); border-radius:8px;
+  font-size:15px; font-family:inherit;
+}
+.custom-name-row input:focus { border-color:var(--primary-light); outline:none; }
+.custom-name-btn {
+  padding:12px 20px; background:var(--primary); color:#fff; border:none;
+  border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap;
+}
+.custom-name-btn:hover { background:var(--primary-light); }
+.custom-name-hint {
+  font-size:12px; color:var(--gray-500); margin-top:8px;
+}
+.custom-name-hint.error { color:var(--danger); }
+.custom-name-hint.success { color:var(--success); }
+
+.custom-members-list { display:flex; flex-wrap:wrap; gap:10px; }
+.custom-member-item { display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--gray-200); border-radius:8px; padding:8px 14px; font-size:13px; cursor:pointer; transition:all .2s; }
+.custom-member-item:hover { border-color:var(--primary); background:#eff6ff; }
+.custom-member-item.selected { border-color:var(--primary); background:#dbeafe; }
+.custom-member-item .cmi-name { font-weight:600; color:var(--primary); }
+.custom-member-del { background:none; border:1px solid var(--danger); color:var(--danger); padding:3px 10px; border-radius:4px; font-size:11px; cursor:pointer; transition:all .2s; }
+.custom-member-del:hover { background:var(--danger); color:#fff; }
+
+.pwd-modal {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
+  z-index:200; align-items:center; justify-content:center; padding:16px;
+}
+.pwd-modal.show { display:flex; }
+.pwd-modal-card {
+  background:#fff; border-radius:12px; padding:28px 32px; width:360px; max-width:90vw;
+  box-shadow:0 8px 32px rgba(0,0,0,0.2); text-align:center;
+}
+.pwd-modal-card h3 { font-size:18px; color:var(--primary); margin-bottom:8px; }
+.pwd-modal-card .pwd-sub { font-size:13px; color:var(--gray-500); margin-bottom:20px; }
+.pwd-modal-card input {
+  width:100%; padding:12px 14px; border:1.5px solid var(--gray-200); border-radius:8px;
+  font-size:15px; text-align:center; margin-bottom:16px;
+}
+.pwd-modal-card input:focus { border-color:var(--primary-light); outline:none; }
+.pwd-modal-card .pwd-btns { display:flex; gap:10px; }
+.pwd-modal-card .pwd-btn { flex:1; padding:12px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; }
+.pwd-modal-card .pwd-btn-primary { background:var(--primary); color:#fff; border:none; }
+.pwd-modal-card .pwd-btn-primary:hover { background:var(--primary-light); }
+.pwd-modal-card .pwd-btn-secondary { background:var(--gray-100); color:var(--gray-700); border:1px solid var(--gray-200); }
+.pwd-modal-card .pwd-error { color:var(--danger); font-size:13px; margin-bottom:10px; display:none; }
+.pwd-modal-card .pwd-error.show { display:block; }
+
+.login-confirm {
+  width:100%; max-width:720px; margin-top:8px; text-align:center;
+}
+.login-confirm .confirm-name {
+  font-size:15px; color:#fff; font-weight:600; margin-bottom:10px;
+  opacity:0; transition:opacity 0.2s;
+}
+.login-confirm .confirm-name.visible { opacity:1; }
+.login-confirm .enter-btn {
+  padding:14px 40px; background:#fff; color:var(--primary); border:none;
+  border-radius:10px; font-size:16px; font-weight:700; cursor:pointer;
+  box-shadow:0 4px 16px rgba(0,0,0,0.2); transition:all 0.15s;
+  opacity:0; pointer-events:none; transition:opacity 0.2s;
+}
+.login-confirm .enter-btn.visible { opacity:1; pointer-events:auto; }
+.login-confirm .enter-btn:hover { background:var(--primary-bg); transform:scale(1.03); }
+
+/* ===== HEADER ===== */
+.app-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: #fff; padding: 20px 24px; display:flex; align-items:center; justify-content:space-between;
+}
+.app-header .brand h1 { font-size:18px; font-weight:700; }
+.app-header .brand .sub { font-size:12px; opacity:0.8; margin-top:2px; }
+.app-header .user-info { display:flex; align-items:center; gap:12px; }
+.app-header .user-info .user-badge {
+  background:rgba(255,255,255,0.2); padding:6px 14px; border-radius:20px; font-size:13px;
+}
+.app-header .user-info .logout-btn {
+  background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3);
+  color:#fff; padding:5px 12px; border-radius:6px; font-size:12px; cursor:pointer;
+}
+.app-header .user-info .logout-btn:hover { background:rgba(255,255,255,0.3); }
+.app-header .user-info .export-btn { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 14px; border-radius:6px; font-size:13px; cursor:pointer; }
+.app-header .user-info .export-btn:hover { background:rgba(255,255,255,0.3); }
+
+/* ===== APP ===== */
+#appView { display:none; }
+
+/* ===== TABS ===== */
+.tabs {
+  display:flex; background:#fff; border-bottom:2px solid var(--gray-200);
+  padding:0 16px; position:sticky; top:0; z-index:50; box-shadow:0 2px 4px rgba(0,0,0,0.04);
+}
+.tab-btn {
+  padding:12px 20px; font-size:14px; font-weight:600; color:var(--gray-500);
+  border:none; background:none; cursor:pointer; position:relative; transition:color 0.2s;
+}
+.tab-btn.active { color:var(--primary-light); }
+.tab-btn.active::after {
+  content:''; position:absolute; bottom:-2px; left:0; right:0;
+  height:2px; background:var(--primary-light);
+}
+.tab-btn:hover { color:var(--gray-700); }
+
+/* ===== CONTENT ===== */
+.content { max-width:960px; margin:0 auto; padding:20px 16px; }
+
+/* ===== PROGRESS ===== */
+.progress-card {
+  background:#fff; border-radius:10px; padding:16px 20px; margin-bottom:16px; box-shadow:var(--shadow);
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+}
+.progress-bar-wrap { flex:1; min-width:200px; }
+.progress-bar-wrap .label { font-size:13px; color:var(--gray-700); margin-bottom:6px; }
+.progress-bar { height:8px; background:var(--gray-200); border-radius:4px; overflow:hidden; }
+.progress-bar .fill { height:100%; background:var(--primary-light); border-radius:4px; transition:width 0.3s; }
+.progress-stats { font-size:13px; color:var(--gray-500); }
+.progress-stats .big { font-size:20px; font-weight:700; color:var(--primary); }
+
+/* ===== REPORT LIST ===== */
+.report-list { display:flex; flex-direction:column; gap:12px; }
+.report-item {
+  background:#fff; border-radius:10px; padding:14px 20px; box-shadow:var(--shadow);
+  display:flex; align-items:center; gap:14px; cursor:pointer; transition:box-shadow 0.2s;
+}
+.report-item:hover { box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+.report-item .ri-status {
+  width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:700; flex-shrink:0;
+}
+.report-item .ri-status.done { background:var(--success-bg); color:var(--success); }
+.report-item .ri-status.pending { background:var(--gray-100); color:var(--gray-500); }
+.report-item .ri-body { flex:1; }
+.report-item .ri-body .ri-title { font-size:14px; font-weight:600; color:var(--gray-900); }
+.report-item .ri-body .ri-meta { font-size:12px; color:var(--gray-500); margin-top:2px; }
+.report-item .ri-score { font-size:16px; font-weight:700; color:var(--primary-light); flex-shrink:0; }
+
+/* ===== FILTER ===== */
+.filter-bar {
+  background:#fff; border-radius:10px; padding:14px 20px; margin-bottom:16px; box-shadow:var(--shadow);
+  display:flex; gap:12px; align-items:center; flex-wrap:wrap;
+}
+.filter-bar select, .filter-bar input {
+  padding:8px 12px; border:1.5px solid var(--gray-200); border-radius:6px; font-size:13px; font-family:inherit;
+}
+.filter-bar select:focus, .filter-bar input:focus { border-color:var(--primary-light); outline:none; }
+.filter-bar .filter-label { font-size:13px; color:var(--gray-700); font-weight:600; }
+
+/* ===== EVAL MODAL ===== */
+.modal-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4);
+  z-index:100; align-items:center; justify-content:center; padding:16px;
+}
+.modal-overlay.show { display:flex; }
+.modal-card {
+  background:#fff; border-radius:12px; width:700px; max-width:100%;
+  max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.15);
+}
+.detail-modal-card { width:860px; }
+.detail-body { padding:20px 24px; }
+.detail-meta { margin-bottom:14px; }
+.detail-content { font-size:14px; line-height:1.9; color:var(--gray-800); white-space:normal; }
+.modal-header {
+  padding:20px 24px 16px; border-bottom:1px solid var(--gray-200);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.modal-header h3 { font-size:16px; color:var(--primary); }
+.modal-close {
+  width:32px; height:32px; border-radius:6px; background:var(--gray-100);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; color:var(--gray-500); cursor:pointer; border:none;
+}
+.modal-close:hover { background:var(--gray-200); }
+
+.modal-body { padding:20px 24px; }
+
+.report-summary {
+  background:var(--gray-50); border-radius:8px; padding:16px 20px; margin-bottom:20px;
+  border:1px solid var(--gray-200);
+}
+.report-summary .rs-meta { font-size:12px; color:var(--gray-500); margin-bottom:8px; }
+.report-summary .rs-title { font-size:15px; font-weight:700; color:var(--gray-900); margin-bottom:6px; }
+.report-summary .rs-desc { font-size:13px; color:var(--gray-700); line-height:1.7; }
+.report-summary .rs-tags { display:flex; gap:6px; margin-top:8px; align-items:center; flex-wrap:wrap; }
+.report-summary .rs-tags .tag {
+  font-size:11px; padding:2px 8px; border-radius:4px; background:var(--primary-bg); color:var(--primary-light);
+}
+.report-summary .btn-text { background:#fff; border:1px solid var(--primary); color:var(--primary); padding:5px 12px; border-radius:6px; font-size:12px; cursor:pointer; margin-left:auto; }
+.report-summary .btn-text:hover { background:var(--primary-bg); }
+
+.score-dimension {
+  margin-bottom:24px; padding:16px 20px; background:#fff; border:1px solid var(--gray-200); border-radius:8px;
+}
+.score-dimension .sd-title {
+  font-size:14px; font-weight:700; color:var(--gray-900); margin-bottom:4px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.score-dimension .sd-title .sd-weight { font-size:12px; color:var(--primary-light); background:var(--primary-bg); padding:2px 10px; border-radius:12px; }
+.score-dimension .sd-desc { font-size:12px; color:var(--gray-500); margin-bottom:12px; }
+.score-dimension .sd-options { display:flex; gap:8px; flex-wrap:wrap; }
+.score-dimension .sd-options .opt { cursor:pointer; position:relative; }
+.score-dimension .sd-options .opt input { position:absolute; opacity:0; width:0; height:0; }
+.score-dimension .sd-options .opt label {
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:8px 18px; border:1.5px solid var(--gray-200); border-radius:8px;
+  font-size:14px; font-weight:700; color:var(--gray-500); transition:all 0.15s; cursor:pointer;
+}
+.score-dimension .sd-options .opt input:checked + label {
+  border-color:var(--primary-light); background:var(--primary-bg); color:var(--primary);
+}
+.score-dimension .sd-options .opt label:hover { border-color:var(--gray-300); background:var(--gray-50); }
+.score-dimension .sd-comment { margin-top:12px; }
+.score-dimension .sd-comment textarea {
+  width:100%; min-height:48px; padding:8px 12px; border:1px solid var(--gray-200);
+  border-radius:6px; font-size:12px; font-family:inherit; resize:vertical;
+}
+.score-dimension .sd-comment textarea:focus { border-color:var(--primary-light); outline:none; }
+
+.modal-footer {
+  padding:16px 24px; border-top:1px solid var(--gray-200);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.modal-footer .mf-score { font-size:14px; color:var(--gray-700); }
+.modal-footer .mf-score .val { font-size:22px; font-weight:800; color:var(--primary); }
+.modal-footer .mf-btns { display:flex; gap:10px; }
+.modal-footer .mf-btns .btn { padding:8px 20px; border-radius:6px; font-size:14px; font-weight:600; cursor:pointer; }
+.modal-footer .mf-btns .btn-primary { background:var(--primary); color:#fff; border:none; }
+.modal-footer .mf-btns .btn-primary:hover { background:var(--primary-light); }
+.modal-footer .mf-btns .btn-secondary { background:var(--gray-100); color:var(--gray-700); border:1px solid var(--gray-200); }
+.modal-footer .mf-btns .btn-secondary:hover { background:var(--gray-200); }
+.modal-footer .mf-btns .btn-danger { background:var(--danger); color:#fff; border:none; }
+.modal-footer .mf-btns .btn-danger:hover { background:#b71c1c; }
+
+/* ===== MY SCORES ===== */
+.my-scores-hero {
+  background:#fff; border-radius:12px; padding:28px 32px; margin-bottom:20px; box-shadow:var(--shadow);
+  text-align:center;
+}
+.my-scores-hero .ms-label { font-size:14px; color:var(--gray-500); margin-bottom:4px; }
+.my-scores-hero .ms-val { font-size:48px; font-weight:800; color:var(--primary); }
+.my-scores-hero .ms-val .ms-max { font-size:16px; color:var(--gray-500); font-weight:400; }
+.my-scores-hero .ms-sub { font-size:13px; color:var(--gray-500); margin-top:8px; }
+
+.my-report-card {
+  background:#fff; border-radius:10px; padding:16px 20px; box-shadow:var(--shadow);
+}
+.my-report-card .mrc-title { font-size:14px; font-weight:600; color:var(--gray-900); }
+.my-report-card .mrc-meta { font-size:12px; color:var(--gray-500); margin-top:2px; }
+.my-report-card .mrc-dims { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+.mrc-dim { background:var(--gray-50); border-radius:6px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
+.mrc-dim .dim-name { font-size:12px; color:var(--gray-700); }
+.mrc-dim .dim-val { font-size:16px; font-weight:700; color:var(--primary); }
+.mrc-dim .dim-val .dim-max { font-size:11px; color:var(--gray-500); font-weight:400; }
+.my-report-card .mrc-total { margin-top:12px; padding-top:12px; border-top:1px solid var(--gray-200); display:flex; align-items:center; justify-content:space-between; }
+.my-report-card .mrc-total .total-label { font-size:13px; color:var(--gray-700); font-weight:600; }
+.my-report-card .mrc-total .total-val { font-size:20px; font-weight:700; color:var(--primary); }
+.my-report-card .mrc-total .total-val .total-max { font-size:12px; color:var(--gray-500); }
+
+/* ===== LEADER ===== */
+.leader-summary {
+  background:#fff; border-radius:12px; padding:20px 24px; margin-bottom:20px; box-shadow:var(--shadow);
+  display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
+}
+.leader-summary .ls-stat { background:var(--gray-50); border-radius:8px; padding:14px 16px; text-align:center; }
+.leader-summary .ls-stat .ls-val { font-size:28px; font-weight:800; color:var(--primary); }
+.leader-summary .ls-stat .ls-label { font-size:12px; color:var(--gray-500); margin-top:4px; }
+
+.matrix-table {
+  width:100%; border-collapse:collapse; font-size:12px;
+  background:#fff; border-radius:10px; overflow:hidden; box-shadow:var(--shadow);
+}
+.matrix-table th { background:var(--primary); color:#fff; padding:10px 8px; font-weight:600; white-space:nowrap; }
+.matrix-table td { padding:8px 6px; text-align:center; border-bottom:1px solid var(--gray-200); white-space:nowrap; }
+.matrix-table tr:hover td { background:var(--primary-bg); }
+.matrix-table .cell-score { font-weight:700; color:var(--primary); }
+.matrix-table .cell-na { color:var(--gray-300); }
+.matrix-table .cell-avg { font-weight:800; color:var(--success); background:var(--success-bg); }
+.matrix-table .row-header { font-weight:600; color:var(--gray-900); text-align:left; padding-left:12px; background:var(--gray-50); }
+
+.matrix-wrap { overflow:auto; max-height:70vh; border-radius:10px; }
+
+/* ===== TOAST ===== */
+.toast {
+  position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-80px);
+  background:var(--success); color:#fff; padding:12px 28px; border-radius:8px;
+  font-size:14px; font-weight:600; z-index:9999; transition:transform 0.3s;
+  box-shadow:0 4px 16px rgba(0,0,0,0.2);
+}
+.toast.error { background:var(--danger); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width:600px) {
+  .name-grid { grid-template-columns:repeat(2, 1fr); }
+  .app-header { padding:14px 16px; }
+  .app-header .brand h1 { font-size:15px; }
+  .tabs { padding:0 8px; }
+  .tab-btn { padding:10px 12px; font-size:13px; }
+  .content { padding:12px 8px; }
+  .progress-card { flex-direction:column; align-items:flex-start; }
+  .report-item { flex-direction:column; align-items:flex-start; gap:8px; }
+  .modal-card { max-height:95vh; }
+  .leader-summary { grid-template-columns:1fr 1fr; }
+  .my-report-card .mrc-dims { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="standalone-banner">独立版本 · 数据保存在本机浏览器，无需服务器 · 多人在同一设备上轮流登录即可互评</div>
+
+<!-- ===== LOGIN ===== -->
+<div id="loginView">
+  <div class="login-header">
+    <h2>物控科 Q2 复盘互评系统</h2>
+    <div class="login-sub" id="loginSub">2026年第二季度 · 请选择您的身份进入评分</div>
+  </div>
+
+  <div class="login-section">
+    <div class="ls-title">选择您的姓名</div>
+    <div class="name-grid" id="nameGrid"></div>
+  </div>
+
+  <div class="login-section">
+    <div class="ls-title">姓名不在列表中？输入您的名字</div>
+    <div class="custom-name-row">
+      <input type="text" id="customNameInput" placeholder="请输入您的姓名" maxlength="10" autocomplete="off" onkeydown="if(event.key==='Enter')registerCustomName()">
+      <button class="custom-name-btn" onclick="registerCustomName()">注册并进入</button>
+    </div>
+    <div class="custom-name-hint" id="customNameHint">输入后点击按钮，系统会自动为您创建账号</div>
+  </div>
+
+  <div class="login-section" id="customMembersSection" style="display:none">
+    <div class="ls-title">已注册的其他成员</div>
+    <div class="custom-members-list" id="customMembersList"></div>
+  </div>
+
+  <div class="login-section">
+    <div class="ls-title">科室领导（需密码验证）</div>
+    <div class="leader-card" id="leaderCard" onclick="selectLeader()">
+      <span class="lc-text">科室领导（查看全部评分数据）</span>
+    </div>
+  </div>
+
+  <div class="login-confirm">
+    <div class="confirm-name" id="confirmName"></div>
+    <button class="enter-btn" id="enterBtn" onclick="doLogin()">进入系统</button>
+  </div>
+</div>
+
+<!-- Leader password modal -->
+<div class="pwd-modal" id="pwdModal">
+  <div class="pwd-modal-card">
+    <h3>领导身份验证</h3>
+    <div class="pwd-sub">请输入领导密码以查看全部评分数据</div>
+    <div class="pwd-error" id="pwdError">密码错误</div>
+    <input type="password" id="pwdInput" placeholder="请输入密码" autocomplete="off">
+    <div class="pwd-btns">
+      <button class="pwd-btn pwd-btn-secondary" onclick="cancelLeader()">取消</button>
+      <button class="pwd-btn pwd-btn-primary" onclick="verifyLeader()">验证并进入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="appView">
+  <div class="app-header">
+    <div class="brand">
+      <h1>物控科 Q2 复盘互评</h1>
+      <div class="sub">2026年第二季度 · 独立版本</div>
+    </div>
+    <div class="user-info">
+      <span class="user-badge" id="userBadge"></span>
+      <button class="export-btn" id="exportBtn" onclick="exportDocument()" style="display:none">生成文档</button>
+      <button class="logout-btn" onclick="doLogout()">退出</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="memberTabs">
+    <button class="tab-btn active" onclick="switchTab('evaluate')">评分任务</button>
+  </div>
+
+  <div class="tabs" id="leaderTabs" style="display:none">
+    <button class="tab-btn active" onclick="switchLeaderTab('matrix')">评分矩阵</button>
+    <button class="tab-btn" onclick="switchLeaderTab('ranking')">综合排名</button>
+    <button class="tab-btn" onclick="switchLeaderTab('members')">成员管理</button>
+  </div>
+
+  <div class="content" id="mainContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== EVAL MODAL ===== -->
+<div class="modal-overlay" id="evalModal">
+  <div class="modal-card" id="evalModalCard"></div>
+</div>
+
+<!-- ===== DETAIL MODAL ===== -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-card detail-modal-card" id="detailModalCard"></div>
+</div>
+
+<script>
+// ========== EMBEDDED DATA ==========
+var PRESET_MEMBERS = [{"id": 1, "name": "何兰梅", "category": "遥控器"}, {"id": 2, "name": "周钟伟", "category": "电子线"}, {"id": 3, "name": "董樱娇", "category": "灯条"}, {"id": 4, "name": "黄观弟", "category": "板卡"}, {"id": 5, "name": "刘发巧", "category": "电阻/电容"}, {"id": 6, "name": "张爱飞", "category": "外销灯条"}, {"id": 7, "name": "彭丹", "category": "PCB"}, {"id": 8, "name": "张娟", "category": "膜片类"}, {"id": 9, "name": "刘志红", "category": "线材"}, {"id": 10, "name": "翟曼曼", "category": "电声器件"}, {"id": 11, "name": "孙艳艳", "category": "结构类"}, {"id": 12, "name": "王莉梅", "category": "背板"}, {"id": 13, "name": "何艳娟", "category": "数据"}, {"id": 14, "name": "梁亚妮", "category": "纸箱/EPS/EPE"}, {"id": 15, "name": "陈银花", "category": "水印箱/彩箱"}, {"id": 16, "name": "冀媛媛", "category": "美工"}, {"id": 17, "name": "李楚楚", "category": "塑胶件"}, {"id": 18, "name": "张盼", "category": "型材/底座等"}, {"id": 19, "name": "章娉", "category": "本地化"}, {"id": 20, "name": "杨丽娟", "category": "PCB/灯条"}, {"id": 21, "name": "高超", "category": "结构组"}, {"id": 22, "name": "张亚峰", "category": "背板交付"}, {"id": 23, "name": "于霞霞", "category": "五金、螺钉/母类"}, {"id": 24, "name": "曹玉玺", "category": "模切件"}];
+var REPORTS = [{"id": 1, "memberId": 1, "reviewer": "何兰梅", "category": "遥控器", "date": "2026年5月", "type": "客户投诉引发停产/交付异常/品质协调", "title": "5月8日，研发通知供应商暂停N030107-002620-001遥控器生产，物控同步获悉该物料已有多批次在途及在库。涉及Veira、Ekkaa、Westway、...", "summary": "5月8日，研发通知供应商暂停N030107-002620-001遥控器生产，物控同步获悉该物料已有多批次在途及在库。涉及Veira、Ekkaa、Westway、Winsharp、Jaina五家印度代工客户订单，库存随即被质量部全部冻结，交付计划全面中断。", "fullContent": "复盘人 何兰梅 负责类别 遥控器 日  期 2026年5月  事件类型：客户投诉引发停产/交付异常/品质协调\n事件回顾\n事件简述\n5月8日，研发通知供应商暂停N030107-002620-001遥控器生产，物控同步获悉该物料已有多批次在途及在库。涉及Veira、Ekkaa、Westway、Winsharp、Jaina五家印度代工客户订单，库存随即被质量部全部冻结，交付计划全面中断。\n目标与达成\n原定目标\n按客户订单交期完成N030107-002620-001遥控器的物料齐套，确保5月陆续交付，库存正常周转\n实际达成\n1.Winsharp、Jaina两家未投诉客户：按原编号正常出货。\n2.Veira、Ekkaa、Westway三家投诉客户：切换至新编号N030107-004019-001，5月23日起陆续交付。\n3.原冻结库存中符合投诉客户订单的部分，因供应商拒返长期滞留。\n根因分析\n直接原因\n品质叫停流程不规范：质量部收到投诉后，未完成问题核查、责任界定和整改验证，直接叫停生产、冻结库存，导致物控被动应对。\n责任判定严重滞后：质量部仅凭客户投诉即要求供应商返工，未出具正式判定依据，导致供应商拒不受理，返工陷入僵局。\n深层原因\n1.产品验证流程存在漏洞：客户端擅自更改产品结构（加装饰件），我司未同步开展适配验证和性能复测，直接批量出货。遥控器接收点被结构遮挡，导致语音识别距离变短的品质投诉\n2.前端变更同步机制缺失：业务端未将客户结构变更信息同步至研发、品质、供应链等环节，各部门信息脱节，后端管控全部偏差。\n3.信息断层：物控作为交付第一责任人，停产通知后未能第一时间获取完整的客户订单受影响范围清单（哪些客户投诉、哪些未投诉），无法主动制定分客户交付策略。\n解决方案\n临时方案\n1.库存分流：Winsharp、Jaina未投诉，使用原编号合格库存直接出货；Veira、Ekkaa、Westway三家投诉客户，全部切换至新编号N030107-004019-001\n2.新物料重新采购：针对三家投诉客户订单，重新下达新编号物料采购/生产计划\n3.账务切换：协调储运部完成已入库订单的退账、退料及编号调整，确保系统账实一致\n4. 工单变更：跟进研发端对已创建生产订单出具临时更改，确保新旧料号切换不遗漏。\n长期措施\n1.由研发牵头完成新编号N030107-004019-001备案，后续所有印度代工遥控器订单统一使用新编号，同步更新BOM清单，从源头替代旧版本。\n2.品质异常发生后，优先同步开展问题排查与责任界定，明确各方权责后再推进返工、整改、追责、费用核算，保障整改工作高效推进。\n3.客户端任何结构、参数、外观变更，业务端须第一时间书面拉通研发、品质、供应链、生产等所有相关部门，固化变更记录，杜绝信息断层。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1.物料体系闭环：跟进新编号N030107-004019-001的BOM更新与落地复用情况，确保所有印度订单完成切换，旧版本物料逐步消化清零。\n2.跟踪新编号首批采购到货及交付节点，确保切换不脱节\n3.供应商问题闭环：同步告知供应商，本次冻结库存不需再安排返工\n\n物控科复盘"}, {"id": 2, "memberId": 2, "reviewer": "何兰梅", "category": "遥控器", "date": "2026年6月", "type": "客指新供应商导入深圳交货流程混乱", "title": "北美三星客指遥控器导入新供应商，该供应商此前仅向印度、印尼工厂交货，从未向中国深圳供货。 因属客指供应商，其不接受我司SRM系统账号注册、标签打印等任何要求。运...", "summary": "北美三星客指遥控器导入新供应商，该供应商此前仅向印度、印尼工厂交货，从未向中国深圳供货。 因属客指供应商，其不接受我司SRM系统账号注册、标签打印等任何要求。运营科组织业务、供应链、计划等部门会议，敲定临时方案：因生产急用，先安排供应商发货。 第一批货到深圳蛇口港后，出现无人提货、无人卸货的混乱局面，最终由船务安排提货，并协调仓库帮忙卸货入库。 第二批货即将发货，若流程不梳理，将重复出现同类问题。...", "fullContent": "复盘人 何兰梅 负责类别 遥控器 日  期 2026年6月  事件类型：客指新供应商导入深圳交货流程混乱\n事件回顾\n事件简述\n北美三星客指遥控器导入新供应商，该供应商此前仅向印度、印尼工厂交货，从未向中国深圳供货。 因属客指供应商，其不接受我司SRM系统账号注册、标签打印等任何要求。运营科组织业务、供应链、计划等部门会议，敲定临时方案：因生产急用，先安排供应商发货。 第一批货到深圳蛇口港后，出现无人提货、无人卸货的混乱局面，最终由船务安排提货，并协调仓库帮忙卸货入库。 第二批货即将发货，若流程不梳理，将重复出现同类问题。经多次与运营科沟通，后续提货及卸货暂定由运营科统一安排货代处理，货物入库后由仓库协助打印标签并办理入库\n目标与达成\n原定目标\n客指新供应商首批货物按交期准时、有序到达深圳仓库，并完成SRM入库，保障生产齐套。\n实际达成\n第一批货物最终完成入库，但过程混乱（提货、卸货、标签均临时找人救火）。 未达成：SRM账号注册、标签标准化、长期稳定流程仍未落地，第二批发货前无人组织会议梳理。\n根因分析\n直接原因\n1.客指供应商不接受SRM系统注册与标签打印，导致入库前置条件缺失。 2.首次到深圳交货.提货.卸货.货权转移等环节无明确责任人，形成脱节。 3. 会议只敲定临时发货，但未形成可执行的到港后标准操作流程。\n深层原因\n1. 客指供应商管理机制空白：未针对\"客指供应商不注册SRM\"制定替代流程（如线下合同、仓库代打印标签、运营科统一货代）。 2. 跨部门职责边界不清：提货、卸货、标签、入库涉及运营科、船务、仓库、物控、供应链多个部门，会议记录虽列明责任人，但无牵头人统筹推进。 4. 缺乏复盘与迭代机制：第一批混乱后未有人组织专题会议优化流程，导致第二批面临同样风险。\n解决方案\n临时方案\n1. 运营科统一对接货代，负责到港后的提货与卸货，避免再次出现无人提货、无人卸货。 2. 仓库协助完成标签打印及入库手续，弥补供应商不做SRM/标签的缺口。 3. 物控端持续跟进货物到港节点、船务安排、仓库入库进度，确保信息透明。\n长期措施\n与运营沟通先按照临时方案执行，流程梳理待上浮领导后续组织会议讨论\n经验沉淀与后续追踪\n留下什么、如何闭环？\n 1. 第二批货到港前，由物控督促运营沟通确认提货/卸货/标签责任人及时间节点。  2. 跟踪流程梳理\n\n物控科复盘"}, {"id": 3, "memberId": 3, "reviewer": "周钟伟", "category": "电子线", "date": "7-16", "type": "独家供应风险", "title": "柳川 N011901-011057-001 模组线，供应商于17号反馈接到通知需单条扎线，产能由 2500 台/天骤降至 1000 台/天。与此同时，23号阿里...", "summary": "柳川 N011901-011057-001 模组线，供应商于17号反馈接到通知需单条扎线，产能由 2500 台/天骤降至 1000 台/天。与此同时，23号阿里郎 7 月份 75 寸机型要货量达 12 万台，产能缺口严重，供需矛盾突出。", "fullContent": "复盘人 周钟伟 负责类别 电子线 日  期 7-16  事件类型：独家供应风险\n事件回顾\n事件简述\n柳川 N011901-011057-001 模组线，供应商于17号反馈接到通知需单条扎线，产能由 2500 台/天骤降至 1000 台/天。与此同时，23号阿里郎 7 月份 75 寸机型要货量达 12 万台，产能缺口严重，供需矛盾突出。\n目标与达成\n原定目标\n满足月度要货计划，不造成生产中断\n实际达成\n13号起启动两家供应商并行供货，合计产能提升至 4000 台/天\n根因分析\n直接原因\n 供应商柳川产线调整（单条扎线），原有产能大幅下降，无法满足集中到货需求\n深层原因\n部品通知材料工艺需调整，但未同步评估对既有供应商产能的影响；\n 风险建单导致要货时间高度集中，加剧短期供货压力；\n3. 对独家供应物料的产能弹性缺乏前置预警和备选方案。\n解决方案\n临时方案\n1. 紧急协调柳川增加人手，全力保障临时扩点期间的排产需求；\n2. 紧急启动第二供应商扩点，双线并行提升交付能力。\n长期措施\n1. 持续关注独家物料及后续要货计划；\n2. 持续协调供应商加大弹性产能储备，必要时引入备选供应商；\n3. 建立独家供应物料清单，设置风险等级标识和定期复核机制。\n\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1. 每周复盘供应商产能与要货匹配情况，发现偏差及时预警；\n2. 推动研发/采购/物控三方联动，在新材料/新工艺导入前完成供应链影响评估\n\n物控科复盘"}, {"id": 4, "memberId": 4, "reviewer": "周钟伟", "category": "电子线", "date": "7-16", "type": "交付异常", "title": "宇同4月搬厂/得润6月搬厂，安全关键件CQC证书失效暂停使用事宜", "summary": "宇同4月搬厂/得润6月搬厂，安全关键件CQC证书失效暂停使用事宜", "fullContent": "复盘人 周钟伟 负责类别 电子线 日  期 7-16  事件类型：交付异常\n事件回顾\n事件简述\n宇同4月搬厂/得润6月搬厂，安全关键件CQC证书失效暂停使用事宜\n目标与达成\n原定目标\n完全满足计划，不造成停产\n实际达成\n未影响内销计划\n根因分析\n直接原因\n供应商搬厂后，CQC认证机构需重新审厂，审厂期间认证证书暂停使用，导致相关物料无法正常收料\n\n深层原因\n1. 供应商搬厂时间未提前知会我司，未能提前备货缓冲。\n2. 对CQC认证规则及变更关注不够，未能提前识别风险并采取预防措施。\n解决方案\n临时方案\n找研发认证组讨论下临时方案，应急：证书暂停期间，针对无法转单的部分，创维宽收收料。外销不影响，可以直接\n长期措施\n1. 定期检查供应商CQC证书的有效性，发现问题并持续改进，从根源上解决问题。\n2. 第一时间确认恢复时间，协调供应商加急赶货，研发认证组讨论临时方案以完成过渡。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1. 不定期询问供应商CQC证书状态，确认是否有新的影响。\n2. 第一时间确认暂停期间供应商库存情况，优先提货以保障供应。\n3. 建立供应商CQC证书有效期台账，定期更新并设置预警提醒。\n\n物控科复盘"}, {"id": 5, "memberId": 5, "reviewer": "董樱娇", "category": "灯条", "date": "20260710", "type": "保障 618 大促供货，应对 75V58F Pro 系列灯条增量订单", "title": "保障 618 大促供货，满足75V58F Pro 系列灯条增量订单（总计增量 25500 台：第二周新增 6000 台、第三周新增 18000 台，涉及 N01...", "summary": "保障 618 大促供货，满足75V58F Pro 系列灯条增量订单（总计增量 25500 台：第二周新增 6000 台、第三周新增 18000 台，涉及 N011205-002269-002/4/5 芯瑞达、光学、科维新灯条）", "fullContent": "复盘人 董樱娇 负责类别 灯条 日  期 20260710  事件类型：保障 618 大促供货，应对 75V58F Pro 系列灯条增量订单\n事件回顾\n事件简述\n保障 618 大促供货，满足75V58F Pro 系列灯条增量订单（总计增量 25500 台：第二周新增 6000 台、第三周新增 18000 台，涉及 N011205-002269-002/4/5 芯瑞达、光学、科维新灯条）\n目标与达成\n原定目标\n6 月 12 号光学开始交付，6 月 15 号三家供应商大批量交付，6 月 24 号完成全部增量交付\n实际达成\n6月12号上线后光学因载具原因产出出现批量不良，产能下降30%，但最终三家6 月 23 日提前 1 天完成全部增量交付，整体交付目标基本达成，顺利保障 618 供货\n根因分析\n直接原因\n1、 5 月 21 日新增备货需求后，第一时间反馈采购下单，启动物料跟进\n2、 反复和三家供应商确认物料库存，强调 618 保供优先级，优先排产保障交付时效\n3、核心难点：突发大批量临时增量需求，超出原有物料备货计划，原有物料储备不足，需要紧急协调物料供给，造成交付节奏和原定计划不一致\n深层原因\n1、前端销售 / 需求预测存在波动，突发大额增量属于非预期需求，前期滚动备货规划不足，没有提前预留弹性产能和安全库存\n2、信息同步存在滞后，未能提前预判 618 大促激增需求，物料备货模型偏刚性，缺少弹性预案\n3、多供应商物料统筹联动不足，共用物料库存信息未实时同步，临时产能调配存在磨合周期\n解决方案\n临时方案\n和供应商沟通挪用部分共用物料救急，剩余紧缺物料加急跟进采购、催料，优先保障 618 订单生产交付，最终顺利赶工完成增量交付\n长期措施\n1、 定期联动供应链、计划、销售端做需求评审，针对主力物料做滚动安全备货，减少突发大额增量订单冲击\n2、建立多供应商物料库存实时同步机制，制定旺季保供应急预案，预留弹性产能和备用物料\n3、完善需求预测机制，提前识别大促节点需求波动，做好前置备货规划\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1、大促旺季保供核心：快速响应突发增量、优先锁定物料资源、明确保供优先级，和核心供应商建立紧急沟通通道是关键\n2、跨部门联动（ 采购 / 生产 / 销售）提前对齐预测数据，是减少交付延误风险的根本方法"}, {"id": 6, "memberId": 6, "reviewer": "董樱娇", "category": "灯条", "date": "20260710", "type": "100A10H 芯瑞达灯条 N011201-00151-001 4 月份少产 50 台", "title": "4 月月度需求备货总量 400 台，供应商首批上线生产出现不良尾数问题，最终造成整体少产 50 台", "summary": "4 月月度需求备货总量 400 台，供应商首批上线生产出现不良尾数问题，最终造成整体少产 50 台", "fullContent": "复盘人 董樱娇 负责类别 灯条 日  期 20260710  事件类型：100A10H 芯瑞达灯条 N011201-00151-001 4 月份少产 50 台\n事件回顾\n事件简述\n4 月月度需求备货总量 400 台，供应商首批上线生产出现不良尾数问题，最终造成整体少产 50 台\n目标与达成\n原定目标\n4 月完成交付 400 台 100A10H 芯瑞达灯条 (N011201-00151-001)，保障正常产线用料\n实际达成\n实际产出 361 台，存在 39 台缺口，未能达成 400 台交付目标，最终结余50台少产\n根因分析\n直接原因\n供应商首批上线新品 / 批次生产，制程不良率异常，产出合格数量不足，产生不良尾数，合格成品数量达不到计划数量，直接导致缺料 50 台\n深层原因\n1、新品 / 新批次量产前验证、试产管控不足，来料品质确认和制程风险评估不到位\n2、前期未预留品质不良缓冲库存 / 安全库存，未设置上线小批量试产确认机制，直接大批量投产\n3、前期生产进度、品质数据同步监控不足，未能及早发现不良异常、提前预警缺口\n解决方案\n临时方案\n紧急和供应商沟通返工修复良品、追加补产 50 台合格灯条\n长期措施\n1、建立新批次 / 新品灯条上线前小批量试产验证机制，完成品质确认后再批量投产\n2、针对新品 / 新批次物料设置合理安全库存 / 缓冲量，预留不良容错量，避免单次不良直接造成缺料\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1、 经验教训：与供应商沟通新品物料务必预留缓冲库存，避免品质异常造成硬性缺料\n2、闭环机制：制定新物料上线管控 SOP，明确试产验证、首检、安全库存管控要求；责任人：物控 + 品质 + 采购；定期核查新料试产执行情况、月度复盘缺料异常；验证方式：核查月度齐套达成率、新品批次不良缺料次数，确认后续不再发生同类少产问题\n\n物控科复盘"}, {"id": 7, "memberId": 7, "reviewer": "黄观弟", "category": "板卡", "date": "26年4月", "type": "交付异常", "title": "LG订单因WIFI模块芯片供应缺口，板卡交付受阻，约245K订单无法按期出货", "summary": "LG订单因WIFI模块芯片供应缺口，板卡交付受阻，约245K订单无法按期出货", "fullContent": "复盘人 黄观弟 负责类别 板卡 日  期 26年4月  事件类型：交付异常\n事件回顾\n事件简述\nLG订单因WIFI模块芯片供应缺口，板卡交付受阻，约245K订单无法按期出货\n目标与达成\n原定目标\n按排产计划交付\n实际达成\n经三方协商按芯片分配进度，确认订单优先级分批交付\n根因分析\n直接原因\n\nLG端WIFI模块芯片分配额度不足，未覆盖订单需求\n2、需求预测上调后，客指芯片备料周期（>90天）无法匹配交付节奏\n3、芯片到货信息不透明，排产计划被动调整，交付节点失控\n深层原因\n客指物料交期依赖上游单点决策，后端管理被动\n晶圆等原材料短缺叠加涨价，供应商产能优先向高毛利客户倾斜\n解决方案\n临时方案\n芯片分配锁定与排产协调\n多渠道推动LG明确WIFI芯片分配数量及交付时间表，逐批锁定到货时间节点\n联合CVTE、供应链、显拓及物料部召开专项协调会，按芯片分配节点重排订单优先级，逐批排产交付\n\n长期措施\n预测驱动备料与供应商协同机制\n1、CVTE基于滚动预测提前备货客指长周期物料，促使订单交付\n2、推动业务联合LG建立物料预释放机制，提前向上下游释放需求计划，缩短备料周期\n经验沉淀与后续追踪\n留下什么、如何闭环\n 1、预测即产能：关键芯片备货须以“预测”而非“订单”驱动，通过预付款锁定晶圆产能，从根本上规避交期错配\n2、一颗料会卡死整条线：客指物料一旦断供，所有努力归零。开发阶段要主动导入替代方案，日常主动维护备份方案，关键时刻才有退路可走"}, {"id": 8, "memberId": 8, "reviewer": "黄观弟", "category": "板卡", "date": "26年6月", "type": "质量异常", "title": "数字板卡2640356M与2640424S1订单烧录完成的EMMC芯片发现软件混单，反查发现涉及8张CKD订单，影响达58K PCS，存在出货后客户端混料风险。", "summary": "数字板卡2640356M与2640424S1订单烧录完成的EMMC芯片发现软件混单，反查发现涉及8张CKD订单，影响达58K PCS，存在出货后客户端混料风险。", "fullContent": "复盘人 黄观弟 负责类别 板卡 日  期 26年6月  事件类型：质量异常\n事件回顾\n事件简述\n数字板卡2640356M与2640424S1订单烧录完成的EMMC芯片发现软件混单，反查发现涉及8张CKD订单，影响达58K PCS，存在出货后客户端混料风险。\n目标与达成\n原定目标\n原材料按期交货\n实际达成\n经返工处理后，6月10日完成交货\n根因分析\n直接原因\nRGB仓库将物料运输至C/SKD科打包过程中，未按烧录订单分类隔离运输，导致8张CKD订单出现不同程度的EMMC混装。\n深层原因\n1、不同订单使用同型号eMMC物料，但烧录软件版本不同，外观无法区分。\n2、仓库按原材料通用逻辑管理，缺少按烧录订单隔离的管控机制，混料风险高。\n解决方案\n临时方案\n针对未出货且已确认混装的批次，立即安排重新烧录正确软件并全检确认。\n2、针对已出货且确认混装的批次，跟进到海外工厂，提供升级软件及操作SOP，指导处理。\n长期措施\n全流程订单标识标签追溯管控，具体如下：\n数字SMT烧录组完成烧录后，在每个最小包装上粘贴订单标识标签，并按订单箱数打印对应数量标签，随货转交仓库。\n数字仓库按订单打印送货单并进行抽真空打包，每个最小包转移粘贴订单标识标签，每个外箱亦粘贴对应标签\n数字仓库按订单配送至RGB C/SKD科在送货单上签收确认，送货单交RGB原材仓库过账。\n通过以上措施实现订单标识追溯，避免出货后客户端混料。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n将本次混料事件纳入质量案例库，组织SMT烧录组、仓库、C/SKD科开展专项培训，确保各环节人员掌握订单标识标签管控要求\n建立烧录物料\"一单一批\"隔离管理制度，同型号不同订单的烧录物料须分区域存放、分批次转运，严禁混放混运。\n3、后续追踪：每月抽查至少2次标签执行情况（烧录→仓库→C/SKD全链路），验证标签完整率与订单匹配准确率，持续3个月确认无复发后转为常规稽核项。\n\n物控科复盘"}, {"id": 9, "memberId": 9, "reviewer": "刘发巧", "category": "电阻、电容、开关、晶振", "date": "2026.06", "type": "交付异常", "title": "风华厂家热敏电阻料号：N010903-000186-001因E3F/E3FQ/32E3E/X6H系列5月底6月初集中建单，需求量大幅增加；", "summary": "风华厂家热敏电阻料号：N010903-000186-001因E3F/E3FQ/32E3E/X6H系列5月底6月初集中建单，需求量大幅增加；", "fullContent": "复盘人 刘发巧 负责类别 电阻、电容、开关、晶振 日期 2026.06  事件类型：交付异常\n事件回顾\n事件简述\n风华厂家热敏电阻料号：N010903-000186-001因E3F/E3FQ/32E3E/X6H系列5月底6月初集中建单，需求量大幅增加；\n厂家每天5K（周日节假日除外）产能严重不足,无法满足要货需求；\n目前建单缺口16W，影响以上型号订单7月初走柜。\n目标与达成\n原定目标\n要求6月底交付16W，满足7月初订单走柜\n实际达成\n每天5K，无法增量，无法满足7月初16W建单缺口\n根因分析\n直接原因\n需求集中增量：E3F/E3FQ/32E3E/X6H系列5月底6月初集中建单，需求量短期骤增，超出厂家日常产能。\n深层原因\n1月份首次批量产时北美Q4HN项目出现缺料，因产能有瓶颈，提出扩点要求扩点，扩点结果：\n①风华提出改K脚方案，改K脚日产能10-15K以上，K脚送样，反馈高度超，要求14.5mm  MAX，风华做不到，只能做到15.5mmMAX；\n②扩点中昊N010903-000191-001，中昊温升不合格，3月份暂闭环处理了，后N010903-000191-001 4月份出现量产需求，咨询部品反馈样品有给研发测试，在X6H系列上验证合格。中昊因温升问题一直未改善好，担心存在质量隐患，不敢批量生产交货；\n③扩点达孚送样，样品是1Ω5A，达孚反馈Ф11mm达不到7A，只能做到5A，目前扩点暂闭环；\n④扩点为勤送样，样品尺寸偏大Ф15mm，为勤反馈Ф11mm达不到7A，目前反馈做不了。\n\n解决方案\n临时方案\n①风华不挑选脚长产能每天15-20K，7月1号开始可以按每天15-20K交货，生产剪脚使用。\n\n长期措施\nY脚每天产能20K，7月2号提供Y脚样品，插件后引脚长度超2.5mm了，不合格，风华反馈最短引脚长度为 3.0±0.5mm，待提供新样品。如更改脚型的方案无效，需要设计师在系统中禁选或限选此款物料。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n无"}, {"id": 10, "memberId": 10, "reviewer": "刘发巧", "category": "电阻、电容", "date": "2026.06", "type": "临时更改导致交付异常", "title": "6月份，我司研发设计师要求华威对加垫片铝电解电容共计12款物料实施整体切换。因BOM直接更改、未设置过渡期，系统即时报缺。新物料为全新规格，供应商无原材料储备，...", "summary": "6月份，我司研发设计师要求华威对加垫片铝电解电容共计12款物料实施整体切换。因BOM直接更改、未设置过渡期，系统即时报缺。新物料为全新规格，供应商无原材料储备，无法按原定计划生产交付，直接影响相关订单排产及7月初走柜计划。", "fullContent": "复盘人 刘发巧 负责类别 电阻、电容 日期 2026.06  事件类型：临时更改导致交付异常\n事件回顾\n事件简述\n6月份，我司研发设计师要求华威对加垫片铝电解电容共计12款物料实施整体切换。因BOM直接更改、未设置过渡期，系统即时报缺。新物料为全新规格，供应商无原材料储备，无法按原定计划生产交付，直接影响相关订单排产及7月初走柜计划。\n目标与达成\n原定目标\n确保6月份华威加垫片铝电解电容物料正常交付，满足各型号订单生产需求，保障7月初订单按期走柜\n实际达成\nBOM更改后直接跑缺，新物料供应商无原材料储备，6月份铝电解电容无法正常交付，影响相关订单排产及走柜计划。\n根因分析\n直接原因\n①设计师一次性要求切换12款物料，BOM直接更改、无过渡期，导致切换后旧料停用、新料未到，系统当即跑缺；\n②切换后物料为全新规格，供应商无相应原材料储备，短期内无法生产交付。\n深层原因\n①BOM切换流程缺失过渡期管理：物料切换前，设计师未与供应链、物控、采购拉通评估供应商备料周期，未设置新旧物料并行过渡期，变更指令与供应能力脱节；\n②物控信息未前置介入：物控未能提前获知设计师的物料切换计划，无法在切换前推动供应商备料，通知与执行同步断档。\n解决方案\n临时方案\n①紧急协调研发出更改使用旧物料，优先保障6月紧急订单走柜需求；\n②催促华威加快铝箔原材料采购，明确到料时间及首批交付节点，按日跟进交付进度；\n长期措施\n\n7月9号部品、研发、质量、供应链会议决定：\n①研发设计师明确后续新增加垫片铝电解规格应用项目范围，部品工程师根据应用项目范围的通用性在产品认证阶段提前邮件通知厂家备原材20K，认证OK且料号出来后再及时邮件告知厂家备货20K成品。\n②部品邮件发布备货指令，邮件同步抄送相关物控和采购人员，确保备货进度可视、可跟。\n\n经验沉淀与后续追踪\n留下什么、如何闭环？\n①固化流程：物料切换必须要有过渡期，BOM更改前必须确认供应商端原材料到位情况，杜绝无备料即切换；\n②交付跟进：持续跟进华威加垫片物料交付情况，按周核查提前通知备货的实际落地进度，直至新物料供应稳定、旧物料库存清零。\n\n物控科复盘"}, {"id": 11, "memberId": 11, "reviewer": "张爱飞", "category": "外销灯条", "date": "2026.07.13", "type": "供应商交付延迟", "title": "2630384L（750台）需灯条N011205-000543-004共1546PCS。经现场协调，兆驰确认5月5日交付。5月5日下午我司系统仍未查到入库记录，...", "summary": "2630384L（750台）需灯条N011205-000543-004共1546PCS。经现场协调，兆驰确认5月5日交付。5月5日下午我司系统仍未查到入库记录，反馈兆驰后才得知其内部发货审批尚在走流程、需集团总裁审批，实际物料5月6日上午才送达。", "fullContent": "复盘人 张爱飞 负责类别 外销灯条 日  期 2026.07.13  事件类型：供应商交付延迟\n事件回顾\n事件简述\n2630384L（750台）需灯条N011205-000543-004共1546PCS。经现场协调，兆驰确认5月5日交付。5月5日下午我司系统仍未查到入库记录，反馈兆驰后才得知其内部发货审批尚在走流程、需集团总裁审批，实际物料5月6日上午才送达。\n目标与达成\n原定目标\n5月5日交付1546PCS，保障工单2630384L（750台）正常投产，不断线、不延期。\n实际达成\n未达成。5月5日未按承诺到货，实际延迟约半天，5月6日上午才送达。\n根因分析\n直接原因\n兆驰承诺5月5日交期，但实际未履约；\n5月5日下午我方系统仍无入库记录，经反馈兆驰才披露其内部总裁审批尚未完成，导致无法发货；\n3.信息获取滞后——我方直到约定交期的当天下午才发现异常，未提前介入核实。\n深层原因\n1.兆驰内部发货审批链路冗长，关键出货需集团总裁审批，承诺交期时该审批尚未完成，备货/审批与对外交期承诺脱节。\n2.我方对供应商交期管理停留在“确认”层面，未将对方内部审批、备料完成状态纳入承诺验证，缺少过程节点管控。\n解决方案\n临时方案\n5月5日下午发现异常后，立即向兆驰升级沟通并施压，推动其内部加急完成总裁审批流程，最终5月6日上午物料到厂，工单未因缺料停线。\n长期措施\n1.交期双确认机制：对兆驰等关键供应商，确认交期的同时须同步确认对方内部备货、审批等关键节点是否已完成，并将审批状态写入交期回复表作为承诺的前置条件；\n2.承诺交期前1–2天主动核查在途/入库状态，异常自动告警，提前介入，避免“到期才发现未到货”的被动局面。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n风险意识固化：供应商“会议确认交期”≠“可履约交期”，须把其内部审批、备货状态纳入承诺验证体系，不能默认“确认了就会到”；\n主动核查机制：不能依赖供应商主动通报异常，必须建立我方的主动核查机制，交期前1-2天即介入核实，把问题拦截在事前。\n\n物控科复盘"}, {"id": 12, "memberId": 12, "reviewer": "张爱飞", "category": "外销灯条", "date": "2026.7.14", "type": "尾数BIN值品质异常", "title": "物料N011201-000082-001、N011201-000082-002，尾数20PCS。原复4月16日下午到货，4月16日晚20:00突然反馈混bin值...", "summary": "物料N011201-000082-001、N011201-000082-002，尾数20PCS。原复4月16日下午到货，4月16日晚20:00突然反馈混bin值，需返工重新筛选，当晚22:45送到仓库。涉及采购订单明细：", "fullContent": "复盘人 张爱飞 负责类别 外销灯条 日  期 2026.7.14  事件类型：尾数BIN值品质异常\n事件回顾\n事件简述\n物料N011201-000082-001、N011201-000082-002，尾数20PCS。原复4月16日下午到货，4月16日晚20:00突然反馈混bin值，需返工重新筛选，当晚22:45送到仓库。涉及采购订单明细：\n1. 2月9日订单：1001304587，各12根\n2. 3月18日订单：1001331232，各4根\n3. 4月6日订单：1001349798，各4根\n目标与达成\n原定目标\n按计划4月16日下午完成N011201-000082-001、N011201-000082-002各20PCS入库，保障2620145B清尾生产物料齐套。\n实际达成\n4月16日晚20:00反馈物料混bin值异常，需返工重新筛选；当晚22:45才送到仓库\n根因分析\n直接原因\n供应商交付的物料N011201-000082-001、N011201-000082-002分批投料，混bin值，需返工重新筛选，导致物料延迟到仓。\n深层原因\n1、供应商来料品质管控不足，尾数出厂前未有效识别混bin值问题；\n2、尾数订单是分几批下，但是需要跟大货一起出，分批补投，参数非常散，需要配bin值才能一起出\n\n解决方案\n临时方案\n针对尾数混bin缺料，紧急要求供应商端安排返工挑选，并落实专车直送，锁定22:45为最迟到库节点，确保清尾计划不受影响。\n长期措施\n1、每一批补投订单独立批次号，与主订单批次号建立关联，补投生产过程中，每道工序记录bin值数据，确保可追溯。\n2、对发料时各bin值的数量做好确认与记录。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1、品质不能靠“信任”和“经验”，必须靠“防错”利用补投订单独立批号和发料核对确认记录表等物理手段，代替“口头提醒”和“责任意识“\n2、补投不是被动应急行为。等大货做完了才去凑尾数，导致参数散、配bin难。尾数管理必须“前移”，不是“缺多少投多少”，而是“先盘点现有各bin值余量，再决定投什么、投多少”。把尾数当成一个独立的“迷你订单”来严肃对待，而非大货的边角料。\n\n物控科复盘"}, {"id": 13, "memberId": 13, "reviewer": "彭丹", "category": "PCB", "date": "2026年7月16日", "type": "物料切换", "title": "物料N012406-003214-003（55/65/75X6HUM）在量产推进过程中经历多次设计变更，导致订单反复暂停恢复：", "summary": "物料N012406-003214-003（55/65/75X6HUM）在量产推进过程中经历多次设计变更，导致订单反复暂停恢复：", "fullContent": "复盘人 彭丹 负责类别 PCB 日  期 2026年7月16日  事件类型：物料切换\n事件回顾\n事件简述\n物料N012406-003214-003（55/65/75X6HUM）在量产推进过程中经历多次设计变更，导致订单反复暂停恢复：\n5月12日：新增需求，设计师确认需等PMP试产后追加限量封样；\n5月19日：设计师追加N012406-003214-003限量封样10000PCS；\n5月25日：设计师通知003暂停制作、待更新资料，永兴隆未投订单5394PCS同步暂停投产；\n5月26日：设计师升级更新为N012406-003214-005；\n5月28日：因量产紧急，与项目经理及设计师确认按003旧资料继续做4742片（量产4342+试产400）；\n7月7日：涉及三个销单合计1530PCS，设计师确认出临时更改清理003库存。\n涉及供应商：永兴隆。主要影响：量产排产节奏被打乱（暂停约3天），产生1530PCS库存清理需求，封样进度延后。\n目标与达成\n原定目标\n1、按N012406-003214-003版本正常排产，完成量产4342片+试产400片，合计4742片；\n2、保障量产交付节点；3、库存无呆滞。\n实际达成\n5月28日确认按003旧资料继续生产4742片（量产4342+试产400），保障量产计划。\n7月7日确认清理003库存1530PCS，减少呆滞风险。\n根因分析\n直接原因\n设计师多次变更设计版本（003暂停→005升级→003旧资料继续生产），导致订单反复暂停恢复，封样受阻，产生额外库存清理需求。\n深层原因\n1、设计师发起版本变更时，未同步评估在途订单、在制库存影响，物控被动接收通知，无法提前干预。\n2、5月25日暂停后，直至28日才确认按旧资料继续，3天时间内无明确决策路径，设计、项目、物控三方无人拍板。\n3、封样流程依赖PMP试产后才能推进，与量产排产节点之间缺少弹性缓冲。\n解决方案\n临时方案\n1、5月28日紧急拉通项目经理与设计师，确认按旧资料继续生产4742片，保住了量产节点。\n2、7月7日推动设计师出具临时更改，清理1530PCS库存，避免呆滞。\n长期措施\n1、建立设计变更预警机制：设计师发起版本变更/暂停时，同步评估对在途订单、在制库存的影响，物控前置介入。\n2、封样流程优化：封样进度与PMP试产建立联动机制，预留弹性节点，避免封样拖死量产。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1、建一个物控与研发、项目的即时沟通群，收到变更通知后2小时内完成在途订单、在制库存、现有库存三项数据排查，群里同步风险；\n2、重点新品项目，与项目经理、研发负责人建立直接通话渠道，紧急变更时电话拉通三方确认决策，不再邮件来回等；\n3、本次1530PCS清呆进展纳入月度呆滞物料报表，每月更新直至清零。后续设计变更引发的库存，统一作为清呆专项单独跟进。\n4、封样进度固定为周报条目，超期未封样自动标黄预警，提前暴露风险。"}, {"id": 14, "memberId": 14, "reviewer": "彭丹", "category": "PCB", "date": "2026年7月16日", "type": "供应商异常（原材紧缺、产能挤兑）、独家供应风险", "title": "永兴隆因原材紧缺和产能挤兑，已建单订单无法按期排产，交付缺口持续扩大。6月18-20日驻厂协调。", "summary": "永兴隆因原材紧缺和产能挤兑，已建单订单无法按期排产，交付缺口持续扩大。6月18-20日驻厂协调。", "fullContent": "复盘人 彭丹 负责类别 PCB 日  期 2026年7月16日  事件类型：供应商异常（原材紧缺、产能挤兑）、独家供应风险\n事件回顾\n事件简述\n永兴隆因原材紧缺和产能挤兑，已建单订单无法按期排产，交付缺口持续扩大。6月18-20日驻厂协调。\n协调成果\n按6月19日数据：总未清115万PCS，已建单缺口365,359PCS，达成264,350PCS，满足率72.4%。\n交付影响\n6月影响39,200台（国内37,000台、海外3,200台），7月预计影响11,600台（第一周需求）。\n3、交期调整\n双面板LT延至6周（系统LT35天），多层板延至7周（系统LT42天）。7月订单交期预计进一步延长，待供应商正式通知。\n目标与达成\n原定目标\n1、核实原材到料及产线投料状态，掌握真实产能与瓶颈工序，逐项核对已建单缺口订单。\n2、协调供应商优先排产最紧急订单，力争已建单缺口365,359PCS满足率提升至80%以上。\n3、建立物控与供应商日常异常反馈通道，实现产能波动及时预警、快速响应。\n实际达成\n1、协调达成264,350PCS，满足率72.4%，未达80%目标。剩余101,009PCS按工序推进。\n2、6月影响39,200台（国内35,000台不满足LT35天），7月影响11,600台。\n3、双面板LT延至6周未达预期，7月交期不确定性加大。需更新内部交期承诺。\n4、已建立专项群每日同步机制，异常2小时内拍照反馈，沟通机制达成。\n根因分析\n直接原因\n1、铜箔、玻纤布等上游原材料供应紧缺，部分订单无料可投。\n2、已接单订单量远超产能上限，产线满负荷，新订单排队导致周期延长。\n3、前期待投与新增订单叠加，产能挤兑加剧。\n深层原因\n1、供应商无产能看板，排产依赖人工沟通，交付承诺与实际产出持续偏离。\n2、缺乏异常主动上报制度，问题供应商自行消化不上报，累积至不可收拾。\n3、主力供应商单一依赖，产能挤兑时缺乏备选，议价能力弱。\n解决方案\n临时方案\n1、驻厂三天逐项核查原材料与工序，优先保障紧急订单，达成264,350PCS。\n2、建专项群每日同步投料进度，异常2小时内拍照反馈。\n3、商务现场接力，保障跟进不断档。\n4、同步LT延长信息，调整客户交期预期，减少违约风险。\n长期措施\n异常主动获取；临时异常需2小时内拍照反馈并给出处理方案，未报纳入考核。\n推动扩点进度，1-2家备选供应商，产能挤兑时分流订单，降低单一依赖。\n3、LT变更须书面申请附产能依据，正式通知相关方。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1、 经验：原材和产能问题渐进累积，被动等逾期再介入损失不可逆，现场协调效率远超远程。\n2、教训：供应商信息不透明存在风险，单一依赖在危机中暴露无遗。\n\n物控科复盘"}, {"id": 15, "memberId": 15, "reviewer": "张娟", "category": "膜片类", "date": "2026年5月-6月", "type": "品质异常、物料切换、交付异常", "title": "5月26日接质量通知，65G25机型反射片因整机暗影不良，研发紧急下发临时设计变更，原物料直接停用，新版切换。变更前未同步物控，新料采购交付滞后，产线面临缺料风...", "summary": "5月26日接质量通知，65G25机型反射片因整机暗影不良，研发紧急下发临时设计变更，原物料直接停用，新版切换。变更前未同步物控，新料采购交付滞后，产线面临缺料风险，受影响产能62116台；同时旧版专用物料无替代消耗，形成呆滞库存11597台。", "fullContent": "复盘人 张娟 负责类别 膜片类 日  期 2026年5月-6月  事件类型：品质异常、物料切换、交付异常\n事件回顾\n事件简述\n5月26日接质量通知，65G25机型反射片因整机暗影不良，研发紧急下发临时设计变更，原物料直接停用，新版切换。变更前未同步物控，新料采购交付滞后，产线面临缺料风险，受影响产能62116台；同时旧版专用物料无替代消耗，形成呆滞库存11597台。\n目标与达成\n原定目标\n新物料按5月26日起陆续到货，保障产线按原计划正常排产，无停线、无专用料呆滞\n实际达成\n5月26日新料首批到货6900PCS，后续滚动补货，最终生产计划顺利落地；但旧版反射片11597台呆滞库存未同步解决\n根因分析\n直接原因\n1.设计变更未提前同步物控：研发紧急下发变更时未预留新物料采购周期，物控被动接通知\n2.变更后未同步叫停旧料：新料已启用，但旧料存量盘点、停用通知、消耗方案均未同步跟进，一刀切停用导致呆滞\n深层原因\n1.研发内部决策后直接下发，未拉通物控、采购评估物料供应和呆滞风险\n2.研发、物控、采购、生产之间缺少变更同步机制，信息各自为政\n解决方案\n临时方案\n1.紧急对接供应商加急排产新版反射片，优先保障65G25供货，滚动交付压缩缺料风险\n2.整理物料缺口及到货节点，同步采购跟单、生产计划，便于生产灵活调整排产\n3.统计旧版呆滞库存数量，同步研发、项目，推动后续消耗方案\n实施效果：5.26 首批到货 6900pcs，持续补货补齐产能需求，未发生长时间停线；呆滞料明细同步至各相关部门\n长期措施\n1.搭建研发 - 物控 - 采购 - 生产同步群，变更信息同步，同步更新进度并锁定生产计划；\n2.同步输出旧料消耗跟进\n3.每日跟进到货进度并预警计划风险\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1.变更确认后，物控同步执行三件事——新料跟催、旧料停用通知下发（同步仓库及供应商）、排产调整建议输出，24小时内形成记录，有据可查。\n2.每新增一次变更事件，补充一条记录，逐步形成“XX类物料变更，物控应该提前多久介入、做哪些事”的标准参考,当同类物料再次发生变更时，物控可以直接调取历史数据快速响应——不用每次从零开始评估。"}, {"id": 16, "memberId": 16, "reviewer": "张娟", "category": "膜片类", "date": "2026年6月", "type": "交付异常、内部沟通欠缺、供应商交付滞后", "title": "一体 C 线 6 月 9 日计划上线清尾机型 2630056F 65G25C2，对应菲律宾订单 75 台，关键物料为恒隆通 MOP 膜片，料号 N110107-...", "summary": "一体 C 线 6 月 9 日计划上线清尾机型 2630056F 65G25C2，对应菲律宾订单 75 台，关键物料为恒隆通 MOP 膜片，料号 N110107-000681-002。 报缺人员私下单独私聊供应商对接交期，未在供应商对接群同步信息，未告知供应商本次产线紧急生产、断料将直接停产并产生转产损失。供应商6-9 日上午反馈物料当日 17:00 到货，下午临时变更交期至 10 日上午；信息同步...", "fullContent": "复盘人 张娟 负责类别 膜片类 日  期 2026年6月  事件类型：交付异常、内部沟通欠缺、供应商交付滞后\n事件回顾\n事件简述\n一体 C 线 6 月 9 日计划上线清尾机型 2630056F 65G25C2，对应菲律宾订单 75 台，关键物料为恒隆通 MOP 膜片，料号 N110107-000681-002。 报缺人员私下单独私聊供应商对接交期，未在供应商对接群同步信息，未告知供应商本次产线紧急生产、断料将直接停产并产生转产损失。供应商6-9 日上午反馈物料当日 17:00 到货，下午临时变更交期至 10 日上午；信息同步滞后，我收到物料延期消息时产线已临近上线，只能紧急调整生产计划，产线被迫转产，造成产线停工损失 2 小时，计划变更\n目标与达成\n原定目标\n6 月 9 日 17:00 前恒隆通 MOP 膜片到货，保障一体 C 线夜间 75 台菲律宾订单正常清尾生产，无转产、无停线。\n实际达成\n物料延迟至 6 月 10 日上午到货，产线被迫临时转产，停线损失 2 小时，未达成原定齐套生产目标，差距为交期延后≥12 小时、产线停工 2 小时。\n根因分析\n直接原因\n内部报缺人员私下私聊供应商沟通交期，未在公共对接群同步需求、交期及停产风险；\n供应商两次变更到货时间，未第一时间同步物控人员，交期反复延后；\n内部跟进拖沓，物控获取物料延期信息滞后，无缓冲处置时间，直接导致产线断料。\n深层原因\n第一层：无强制沟通规范，紧急物料报缺员私下对接供应商，信息无法全员同步\n第二层：缺少紧急物料分级传递机制，报缺人员未告知供应商停产、损失等关键风险，供应商未重视交期\n第三层：物控无法实时掌握物料风险，前置预警失效，未建立延期预警同步机制\n第四层：供应商日常交期约束不足，多次临时改期无前置约束\n\n解决方案\n临时方案\n1.紧急与计划同步进度，计划调整生产计划切换其他机型生产，规避全线长时间停产\n2.安排供应商专人跟进同步物料进度，确认 10 日上午物料准确到货时间，协调到货后优先入库检验\n效果：因供应商物料拖期产生 2 小时转产工时损失，\n长期措施\n内部流程整改：告知报缺员明确紧急物料，统一在供应商对接群公开沟通，禁止私下私聊对接交期；沟通时必须同步产线紧急等级、断料停产风险、衍生损失，所有对接记录群内留痕\n岗位职责固化：报缺员必须信息与物控同步，跟催物料，建立双人跟进机制\n供应商管控：按供应商考核制度对恒隆通进行书面警告、绩效扣分，损失费用转移，并要求供应商提交整改报告，承诺后续交期变更第一时间同步对接群及物控\n经验沉淀与后续追踪\n留下什么、如何闭环？\n教训：报缺员私下单线对接供应商存在信息断层、风险传递缺失、跟进失控问题，极易引发物料延期停产；紧急物料必须公开群内标准化沟通\n固化:明确禁止报缺员私聊对接交期，所有欠货跟催群内沟通，紧急物料沟通必须风险说明\n常态化动作：所有欠料、急料对接统一群内留痕，报缺和物控同步，形成固定操作流程\n跟踪闭环：收取恒隆通书面整改单，连续跟进恒隆通物料交期有无拖期，推动恒隆通改善\n月度复盘：每月盘点供应商交期异常、持续优化协同流程，提升物料齐套交付效率\n\n物控科复盘"}, {"id": 17, "memberId": 17, "reviewer": "刘志红", "category": "线材", "date": "2026年7月13号", "type": "得润FFC线材CQC证书过期，未及时续签导致影响我司生产使用", "title": "接认证组通知，得润电子供应的FFC线材因CQC认证证书过期，被从合格物料清单中删除，相关料号全部冻结。需紧急梳理受影响机型及库存，跟进证书状态及替代方案。", "summary": "接认证组通知，得润电子供应的FFC线材因CQC认证证书过期，被从合格物料清单中删除，相关料号全部冻结。需紧急梳理受影响机型及库存，跟进证书状态及替代方案。", "fullContent": "复盘人 刘志红 负责类别 线材 日  期 2026年7月13号  事件类型：得润FFC线材CQC证书过期，未及时续签导致影响我司生产使用\n事件回顾\n事件简述\n接认证组通知，得润电子供应的FFC线材因CQC认证证书过期，被从合格物料清单中删除，相关料号全部冻结。需紧急梳理受影响机型及库存，跟进证书状态及替代方案。\n目标与达成\n原定目标\n根据认证组清单，识别所有使用涉事FFC线材的库存及影响机型，非独家物料及时切换供应商，独家物料跟进证书恢复进度或推动扩点，保障供应链不断。\n实际达成\n完成库存及机型筛选，非独家物料及时切换厂家，独家物料已推动商务、部品加急扩点，生产进度未受影响。\n根因分析\n直接原因\n得润FFC线材CQC证书到期前未提前续签，衔接中断，重新报备预计耗时3周。\n2、认证组收到CQC官方通知后，信息同步至各部门存在延迟，物控未能第一时间获取受影响料号清单。\n深层原因\n对关键物料供应商的认证有效期、续签进度缺乏主动跟踪，风险未被提前识别。\n2、新机型选型时未将供应商证书有效期纳入评估维度，导致新品设计阶段即绑定证书临期物料。\n解决方案\n临时方案\n1、已量产机型：现有库存可正常使用，新到货物料全部冻结，紧急切换至其他合格供应商交货。\n2、新品型号：非独家物料直接切换供应商；独家物料评估证书恢复时间，确认无法赶上生产节点的，推动商务、部品加急扩点，确保生产需求。\n长期措施\n1、强化供应商认证管理：采购/部品将关键物料认证有效期纳入供应商年度评审指标；证书临期前6个月，由采购/部品向供应商发出续签预警，并跟踪回执。\n2、建立年度认证预警清单：认证组、质量、采购、部品、计划。认证组牵头提前对于本年度过期的重要证书提前沟通，提前响应，避免类似的问题影响生产计划。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1、每年1月向认证组获取当年到期证书清单，筛选涉及我司常用物料，提前3个月通报预警；\n2、新物料首次下单前，确认CQC/UL/CCC等证书有效且合格清单已维护；\n3、独家物料证书临期前半年，提醒采购/部品跟进续签，季度刷新状态。\n\n物控科复盘"}, {"id": 18, "memberId": 18, "reviewer": "刘志红", "category": "线材", "date": "2026年7月13号", "type": "北美订单建单后急交货，紧急协调供应商按期交货", "title": "北美订单于6月10日下达，总量33000PCS。订单建单后因客户交期紧迫，出货计划急。其中，FFC线材 N011901-011333-001/ N011901-...", "summary": "北美订单于6月10日下达，总量33000PCS。订单建单后因客户交期紧迫，出货计划急。其中，FFC线材 N011901-011333-001/ N011901-011335-001 因工艺特殊（需线材环包），供应商标准产能无法满足急单需求。", "fullContent": "复盘人 刘志红 负责类别 线材 日  期 2026年7月13号  事件类型：北美订单建单后急交货，紧急协调供应商按期交货\n事件回顾\n事件简述\n北美订单于6月10日下达，总量33000PCS。订单建单后因客户交期紧迫，出货计划急。其中，FFC线材 N011901-011333-001/ N011901-011335-001 因工艺特殊（需线材环包），供应商标准产能无法满足急单需求。\n目标与达成\n原定目标\n物料需在6月27日前入库，以满足6月28日前的生产齐套及装柜需求。在不产生额外空运费用的前提下按时交付。\n实际达成\n紧急协调供应商调整排产计划，压缩了组装与测试时间，供应商于6月27日晚间完成交货\n根因分析\n直接原因\n1、该物料基础生产周期为20天，供应商反馈每天只有3000的产能，无法20天全部到货。\n2、该物料涉及的“线材环包”工序自动化程度低，依赖人工操作，单日产出效率仅为每天3000PCS。\n深层原因\n1、销售/业务端接到急单后，由于量大，未能第一时间反馈工艺难点至供应链与生产部门，导致风险评估介入太晚（供应商反馈）。缺乏对单一工艺复杂的备选方案，一旦该供应商产能饱和，协调难度增大。\n2、未对特殊工艺（如环包）的产能数据进行单独建档，导致下单前无法准确获知产能数据。\n解决方案\n临时方案\n1、6月15日起，安排出差供应商处，现场协调排产，跟进每日进度。协调供应商增加人员进行瓶颈的环包工序，延长每日有效工作时间。\n2、为抢时间，采取“完工一批、送检一批、发运一批”，减少成品堆积等待时间，也减少到我司检验的不良风险。安排专车直送工厂，节省运输时间。\n长期措施\n1、对所有涉及特殊工艺（环包、复杂组装等）的物料进行盘点。\n明确各供应商的极限日产能，发给商务作为让销售提前备货的依据。\n2、针对北美线高频物料，提前提醒商务跟销售端沟通，设定合理的安全库存，以应对突发急单。\n\n经验沉淀与后续追踪\n留下什么、如何闭环？\n统计了供应商在极限压力下的真实产能数据，为后续排程提供了真实依据。\n\n物控科复盘"}, {"id": 19, "memberId": 19, "reviewer": "翟曼曼", "category": "电声器件", "date": "7月8日", "type": "交付异常", "title": "4月23日，业务新增印度55寸项目2万套内置音箱紧急需求，要求4月底全部出货。", "summary": "4月23日，业务新增印度55寸项目2万套内置音箱紧急需求，要求4月底全部出货。", "fullContent": "复盘人 翟曼曼 负责类别 电声器件 日  期 7月8日  事件类型：交付异常\n事件回顾\n事件简述\n4月23日，业务新增印度55寸项目2万套内置音箱紧急需求，要求4月底全部出货。\n该音箱为大箱体复杂工艺物料，LT28天。此前该物料发生过订单取消，供应商处有部分原材料及半成品呆料，但无成品库存。业务未核实呆料明细，直接按“有呆料可交付”下达极短交期需求，实际评估后4月底仅能分批少量交付，整体订单至5月21日完成清尾。\n目标与达成\n原定目标\n4 月底完成 20000 套音箱出货，保障印度客户订单\n实际达成\n4 月底仅小批分批交货，期间多次调整交期，最终5月21日全部交齐。\n根因分析\n直接原因\n大箱体结构复杂生产周期固定 28 天，4 月 23 日临时加单距离客户要求交付仅剩一周，供应商仅有原材料及半成品，短期内无法完成全量交付。\n深层原因\n1、跨部门呆料信息同步失真：订单取消后，业务只笼统掌握 “供应商有呆料”，未区分原材料 / 半成品 / 成品三类库存，未与物控、商务核实明细即判定可直接交付；\n2、月底工单关闭工单：财务月结关工单前未同步物控关单明细，物控无法区分“永久取消”和“临时关停”，误判订单终止后暂停叫料，复工后系统需求长期缺失，物料下达被延误；\n3、风险前置同步不足：物控提前输出交期不足风险，但跟单、业务未同步做好客户预期管理，时隔两周临时要求加急，无缓冲协调空间。\n解决方案\n临时方案\n1、接需求后第一时间对接供应商，逐项盘点原材料、半成品数量及加工进度，输出分批交付时间表；\n2、 将真实可执行交期同步跟单，由跟单对接业务向客户说明情况，协商分批出货；\n3、建立每日跟进机制，同步生产进度，紧盯5月21日清尾节点，避免二次拖期。\n长期措施\n1、呆料信息标准化：订单取消后，业务单位及时统计呆料明细，严格区分原材料、半成品、成品库存，杜绝信息偏差（如有需要商务、物控辅助，切记：数据一致性）；\n2、月结工单联动机制：每月月底财务关工单前，同步物控、跟单工单关闭清单，标注 “临时关单 / 永久取消”；临时关单工单复工后，跟单须在1个工作日内同步物控，物控同步更新系统需求，恢复叫料；\n3、风险分级同步机制：针对周期不足、库存不足类紧急需求物料，物控评估交期后同步跟单与业务，由跟单/业务据此管理客户预期，提前锁定交付底线。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1、接紧急需求，先向供应商要呆料明细（原材料/半成品/成品），确认清楚再排产，不盲从业务判断；\n2、月底关工单前，主动向计划/跟单获取关单清单，标注“临时关停/永久取消”，涉及在途物料的单独拉出来评估；\n3、交期不足的风险反馈，邮件或微信群留痕，后续业务临时加急时作为依据，避免被动。"}, {"id": 20, "memberId": 20, "reviewer": "翟曼曼", "category": "普通针座", "date": "7月8日", "type": "质量异常", "title": "普通针座N011003-001131-001/N011003-001132-001配套使用：江西4601工厂5月15号的需求，实物已协调供应商交货到江西，被判不...", "summary": "普通针座N011003-001131-001/N011003-001132-001配套使用：江西4601工厂5月15号的需求，实物已协调供应商交货到江西，被判不合格清退处理，无法满足需求计划；协调群里跟催供应商加急处理，供应商回复：协调中。并未给出明确处理结果，实际并未进行处理。反而反馈说，无法处理，刚开始送样时就不愿意供货等类似说辞。", "fullContent": "复盘人 翟曼曼 负责类别 普通针座 日  期 7月8日  事件类型：质量异常\n事件回顾\n事件简述\n普通针座N011003-001131-001/N011003-001132-001配套使用：江西4601工厂5月15号的需求，实物已协调供应商交货到江西，被判不合格清退处理，无法满足需求计划；协调群里跟催供应商加急处理，供应商回复：协调中。并未给出明确处理结果，实际并未进行处理。反而反馈说，无法处理，刚开始送样时就不愿意供货等类似说辞。\n目标与达成\n原定目标\n5月中旬生产1200台\n实际达成\n满足5月中旬1200台的需求\n根因分析\n直接原因\n新品首次交货，包装不符合检验要求\n深层原因\n供应商未和部品工程师对接沟通好，导致时间耽搁\n解决方案\n临时方案\n品质、部品综合评估宽收使用应急，满足紧急需求计划\n长期措施\n打造培养供应商及时明确处理方案与进度、拉通计划、部品、商务、品质评估性能\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1、供应商实物判退后，供应商要回复明确的处理进度、与预计处理完成时间等\n2、如果遇到需要部品、商务、研发等出面拍板的，及时拉群、正式邮件催促，明确实际计划需求时间\n3、物料出现异常时，及时拉通，信息共享，减少不必要的损失\n\n物控科复盘"}, {"id": 21, "memberId": 21, "reviewer": "孙艳艳", "category": "结构类", "date": "2026.6", "type": "独家供应风险/交付异常", "title": "X6HU系列压铸底座，因独家供应商抛光工序产能受限（日产能约700件），适逢55寸、65寸、75寸三款机型集中排产要货，要货周期不足，供应商现有产能无法保障我司...", "summary": "X6HU系列压铸底座，因独家供应商抛光工序产能受限（日产能约700件），适逢55寸、65寸、75寸三款机型集中排产要货，要货周期不足，供应商现有产能无法保障我司要货需求，面临交付断供风险。涉及物料：X6HU系列压铸底座（55/65/75寸）。影响范围：相关机型生产排产计划及客户交付。", "fullContent": "复盘人 孙艳艳 负责类别 结构类 日  期 2026.6  事件类型：独家供应风险/交付异常\n事件回顾\n事件简述\nX6HU系列压铸底座，因独家供应商抛光工序产能受限（日产能约700件），适逢55寸、65寸、75寸三款机型集中排产要货，要货周期不足，供应商现有产能无法保障我司要货需求，面临交付断供风险。涉及物料：X6HU系列压铸底座（55/65/75寸）。影响范围：相关机型生产排产计划及客户交付。\n目标与达成\n原定目标\n按生产计划要求，55寸、65寸、75寸X6HU系列压铸底座需在规定要货周期内按时交付，日交付量需满足产线排产需求，保障生产连续性。\n实际达成\n供应商日产能仅700件，无法满足集中排产要货需求，存在交付缺口。经临时协调供应商增派人员、增加治具后，产能得到阶段性提升；同步推动商务通知供应商按预测备料，后续交付逐步恢复。但短期内交付仍有压力，未完全达成目标。\n根因分析\n直接原因\n1. 独家供应商抛光工序产能不足，日产能仅700件，无法匹配集中排产要货量；\n2. 55寸、65寸、75寸三款产品集中排产，要货周期不足，供应商缺乏足够缓冲时间提升产能。\n深层原因\n1. 独家供应依赖—该物料仅一家供应商，缺乏二供备选，产能波动即造成交付风险；\n2. 预测信息未前置同步—集中排产前未提前向供应商传递预测需求，供应商未能提前备料扩产；\n3. 产能监控机制缺失—对独家供应商关键工序（抛光）产能缺乏定期评估与预警，未能提前识别瓶颈。\n解决方案\n临时方案\n1. 临时协调供应商增派生产人员，提升抛光工序日产能；\n2. 同步协调供应商增加治具，扩充并行生产能力；\n3. 商务部门通知供应商按照预测需求提前备货原材料及辅料，缩短后续交付周期。\n效果：通过增人增治具，供应商产能阶段性提升，缓解了短期交付压力。\n长期措施\n1、通过产能模具评估，每月对关键工序产能进行盘点与预警；同步发商务提前按照预测备货机制\n2、因价格问题暂无法扩点，同步推动商务要求供应商增开复制模满足要货需求\n经验沉淀与后续追踪\n留下什么、如何闭环？\n\n经验教训：\n1. 独家供应商物料须建立产能预警和备选方案，不能仅依赖临时协调；\n2. 集中排产前须提前评估供应商产能瓶颈，前置沟通确认交付能力；\n3. 预测信息须商务紧急同步至供应商端，确保提前备货部分成品及辅料提前响应。\n\n复盘人\n 孙艳艳 负责类别 结构类 日  期 2026.6  事件类型：独家供应、交付异常、临时建单产能受限\n事件回顾\n事件简述\n物料N040108-000235-003散热片为独家供应商供应。每月模具产能评估时，按照系统已建单量评估为\"无风险\"，且6中旬系统超需求3.5万，模具评估中该料号亦标注\"无风险\"。但实际6月底系统建单量突增至19万，独家供应商日产能仅3000件/天，远无法满足交付需求。此前在独家供应商风险评估中，已多次发邮件告知商务此料产能低、后续预测产能无法保证生产、需紧急扩点，但未要求商务在未扩点情况下紧急通知供应商备货成品。导致7月份该料交付风险极大，且因价格太低，扩点至今未完成。\n目标与达成\n原定目标\n按月度模具产能评估流程，N040108-000235-003评估为\"无风险\"，系统显示超需求3.5万，覆盖到8-16号需求缺料1730。独家供应商日产能3000件/天，按当时系统建单量评估可覆盖。\n实际达成\n6月底系统实际建单量达19万，远超评估时的3.5万（差距15.5万）。独家供应商日产能仅3000件/天，月产能约9万件，与19万建单量之间存在约10万件缺口。7月份该料交付风险极大，无法满足生产交付。扩点因价格太低至今未完成，未采取备货成品等过渡措施。\n根因分析\n直接原因\n①模具产能评估仅基于系统已建单量（3.5万）进行评估，未结合实际需求趋势和供应商产能上限进行预判；②系统建单量从3.5万突增至19万，评估时未预见到实际需求的大幅增长；③独家供应商日产能3000件/天，与19万建单量之间存在巨大产能缺口；④虽多次邮件告知商务需扩点，但未要求商务在未扩点时通知供应商备货成品，缺少过渡性保供措施。\n深层原因\n①评估机制缺陷：模具产能评估仅参考系统已建单数据，未纳入需求预测趋势分析与供应商实际产能瓶颈的联动评估，导致\"已建单少=无风险\"的误判；②风险预警闭环缺失：发邮件告知商务产能风险后，未建立\"限期回复+未扩点则必须备货成品\"的闭环跟踪机制，风险告知变成单向通知而非双向确认；③独家供应应急方案单一：仅依赖扩点作为唯一解决路径，缺少\"备货成品缓冲\"等过渡方案；④价格因素制约未前置处理：价格太低导致扩点困难，但未提前启动备选保供方案，也未将价格问题纳入扩点推进的并行处理。\n解决方案\n\n解决方案\n\n临时方案\n①紧急与独家供应商沟通，协调加班或增加CNC治具临时增产，由3000/天从17号开始7000/天；②与商务紧急沟通，推动扩点审批提速，同步要求供应商在扩点未完成前紧急备货成品；③与跟单及计划每天申报交付数量，让计划端同步知悉具体分配方案。\n长期措施\n①优化模具产能评估机制：从仅参考系统已建单量，改为\"需求预测趋势+供应商实际产能上限+独家供应风险\"三维联动评估模型；②建立独家供应商风险闭环管控机制：风险告知邮件发出后，须要求商务在3个工作日内回复并明确行动方案（扩点或备货成品）；③推动对独家供应、产能受限的关键物料每周提示商务提醒扩点或备货成品。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1. 经验教训：①模具产能评估不能只看系统超需求，要结合预测同步评估，特别针对独家供应问题应针对产能受限  无法扩点需要商务同步推动供应商提前储备成品备货方案吗，满足后续临时建单物料\n\n物控科复盘"}, {"id": 22, "memberId": 22, "reviewer": "王莉梅", "category": "背板", "date": "2026年7月", "type": "供应商交付异常", "title": "康特背板在2026年Q1及之前持续出现交付延迟、沟通响应慢等问题，影响我司多基地生产排程。我方于Q2启动专项改进，通过供应商考核扣款及进行移模处罚机制推动整改。", "summary": "康特背板在2026年Q1及之前持续出现交付延迟、沟通响应慢等问题，影响我司多基地生产排程。我方于Q2启动专项改进，通过供应商考核扣款及进行移模处罚机制推动整改。", "fullContent": "复盘人 王莉梅 负责类别 背板 日  期 2026年7月  事件类型：供应商交付异常\n事件回顾\n事件简述\n康特背板在2026年Q1及之前持续出现交付延迟、沟通响应慢等问题，影响我司多基地生产排程。我方于Q2启动专项改进，通过供应商考核扣款及进行移模处罚机制推动整改。\n目标与达成\n原定目标\n1. 通过供应商考核评分及考核处罚措施，推动康特供应商改善背板交付表现\n2. 提升交付及时率，保障各基地生产需求\n3. 改善供需双方沟通效率，建立顺畅的交付协同机制\n4. 推动供应商针对交付问题制定并落实改善措施\n实际达成\n1. Q2季度康特供应商交付项明显改善，交付群内沟通较之前更加顺畅\n2. 供应商安排专人跟进创维交付工作，交付跟进更加及时有效\n3. 每日叫料数量超4000即排出出车计划，交付有序性大幅提升\n4. 各基地报缺跟进出车情况，信息透明度提高，交付效率明显改善\n5. 4、5月份因质量问题造成的停产及转产问题，在6月份已有改善\n注：4、5月份评分偏低主要受质量问题影响，非交付本身问题，6月份已改善\n根因分析\n直接原因\n1. 供应商此前未安排专人跟进创维交付工作，导致交付跟进不及时、责任不明确\n2. 叫料及出车缺乏系统性安排，每日叫料数量大（超4000）但无明确出车计划，导致交付混乱\n3. 各基地缺料信息与供应商出车情况信息不对称，跟进效率低\n4. 4、5月份因质量问题造成停产及转产，间接影响了交付评分\n深层原因\n1. 供应商内部对创维业务重视度不够，缺乏专人负责机制，导致交付管理松散\n2. 供应商出车计划与需求方叫料信息未建立联动机制，信息传递不畅\n3. 缺乏各基地报缺与供应商出车跟进的协同流程，供需双方信息脱节\n4. 供应商质量管理体系不够完善，质量问题引发的停产及转产间接影响交付表现\n5. 此前缺乏有效的考核约束机制，供应商改善动力不足\n解决方案\n临时方案\n1. 对供应商实施考核评分及考核处罚，通过扣款及移模手段施压，倒逼供应商重视交付问题\n2. 在交付群内加强沟通频次，及时反馈交付异常，督促供应商快速响应\n3. 针对质量问题造成的停产及转产，协调品质部门与供应商沟通，推动质量改善\n长期措施\n1. 推动供应商安排专人跟进创维交付工作，建立专人对接机制，明确交付责任人\n2. 建立每日叫料出车计划机制：叫料数量超4000即排出出车计划，确保交付有序进行\n3. 建立各基地报缺跟进出车情况的协同流程，提升信息透明度和交付效率\n4. 持续执行供应商考核评分机制，定期评估供应商表现，形成常态化管理\n5. 持续跟踪供应商质量改善情况，6月份质量问题造成的停产及转产已有改善，需巩固改善趋势\n效果：Q2季度交付项明显改善，交付群内沟通顺畅，交付效率显著提升\n经验沉淀与后续追踪\n留下什么、如何闭环？\n经验沉淀：\n1. 供应商考核评分及处罚措施是推动供应商改善的有效手段，应持续执行\n2. 专人跟进机制对提升交付效率有显著效果，可在其他供应商管理中推广\n3. 建立叫料-出车-报缺的联动流程是提升交付协同效率的关键\n4. 质量问题与交付表现密切相关，需将质量改善与交付管理同步推进\n后续追踪：\n1. 持续监控康特供应商Q3季度交付评分，确保改善趋势持续\n2. 跟踪质量问题改善情况，确保6月份的改善趋势得以巩固\n3. 定期评估专人跟进机制的执行效果，必要时优化调整\n4. 责任人：物控科负责跟踪考核，供应商专人对接交付\n5. 验证方式：月度考核评分数据、交付群沟通记录、各基地报缺跟进记录\n6. 闭环目标：Q3季度交付评分持续达标，质量问题不再影响交付"}, {"id": 23, "memberId": 23, "reviewer": "王莉梅", "category": "背板", "date": "2026年7月", "type": "供应商异常（交付异常）", "title": "5月30日17点，广州于5月30日下午17点叫料N040107-001679-001（5J700F Pro泰洋背板），要求1号早车交到。31日上午10点，供应商...", "summary": "5月30日17点，广州于5月30日下午17点叫料N040107-001679-001（5J700F Pro泰洋背板），要求1号早车交到。31日上午10点，供应商反馈其喷粉线体突发故障，正组织紧急抢修，预计31日晚可恢复生产。当日夜间，供应商再次反馈，因素材存在局部凸点不良，需制作返工治具并重新上线冲压处理。受上述因素叠加影响，该背板良品最终于6月2日16时完成入库并到货。由于物料未能按原计划于6月...", "fullContent": "复盘人 王莉梅 负责类别 背板 日  期 2026年7月  事件类型：供应商异常（交付异常）\n事件回顾\n事件简述\n5月30日17点，广州于5月30日下午17点叫料N040107-001679-001（5J700F Pro泰洋背板），要求1号早车交到。31日上午10点，供应商反馈其喷粉线体突发故障，正组织紧急抢修，预计31日晚可恢复生产。当日夜间，供应商再次反馈，因素材存在局部凸点不良，需制作返工治具并重新上线冲压处理。受上述因素叠加影响，该背板良品最终于6月2日16时完成入库并到货。由于物料未能按原计划于6月1日晚前到位，导致广州模组整机一体线当晚计划转产无法正常执行。\n目标与达成\n原定目标\n物料N040107-001679-001（5J700F Pro泰洋背板）需于6月1日晚前到位，保障广州模组整机一体线当晚计划转产正常执行。\n实际达成\n物料于6月2日16时完成入库并到货，较原计划延迟约1天，导致广州模组整机一体线6月1日晚计划转产无法正常执行。\n根因分析\n直接原因\n供应商喷粉线体突发故障，导致生产中断，无法按计划完成生产；\n素材存在局部凸点不良，需制作返工治具并重新上线冲压处理，进一步延误交付。\n深层原因\n供应商生产保障能力不足：喷粉线体突发故障且未能提前预警或准备替代方案，反映出供应商对关键生产设备的日常维护与应急响应机制不健全，导致生产中断后无法快速恢复；\n质量问题前置管控缺失：素材凸点不良在喷粉线体故障修复后才被发现，说明供应商在素材入厂或上线前缺乏有效的质量检测环节，导致不良品流入后工序，需临时制作返工治具，进一步延误交付；\n信息传递与风险预警滞后：从5月30日叫料到31日、夜间分阶段反馈问题，未在第一时间全面评估并通知可能的最坏延期结果，导致广州方无法提前调整排产计划，被动转产。\n解决方案\n临时方案\n供应商紧急组织喷粉线体抢修，于31日晚恢复生产；\n针对素材凸点不良问题，紧急制作返工治具，对不良品重新上线冲压处理；\n最终于6月2日16时完成良品入库并到货，尽量缩短延误时间。\n长期措施\n建议SQE加强对该家供应商的生产制程监控，降低此类低级异常发生；\n完善异常信息升级与通报机制：供应商发现可能影响交期的问题（含设备、质量等）需在2小时内书面通知到我方，并同步上报初步评估及预计解决时间。若问题持续超过4小时，需每半天更新一次进展，直至问题闭环。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n经验沉淀：\n供应商关键设备故障与素材质量问题是影响交付的常见风险点，需建立前置预警与快速响应机制；信息传递的及时性直接影响我方排产计划的调整空间。\n建立供应商异常信息2小时书面通报机制，明确升级流程与更新频率要求（超4小时每半天更新进展）。\n后续追踪：\n责任人：SQE跟进供应商制程改善\n验证方式：后续供应商异常事件中验证通报及时性与有效性\n\n物控科复盘"}, {"id": 24, "memberId": 24, "reviewer": "何艳娟", "category": "数据", "date": "2026.7", "type": "显示拓展手工备货订单流程事项", "title": "显示拓展的手工备货订单从通知备货→系统生成→物控跟进交付→转换正式订单→正式订单生效→生效通知及反馈流程上多次出现信息时间差、无人跟进、备货要求日期已过期仍未建...", "summary": "显示拓展的手工备货订单从通知备货→系统生成→物控跟进交付→转换正式订单→正式订单生效→生效通知及反馈流程上多次出现信息时间差、无人跟进、备货要求日期已过期仍未建单、转换订单顺序错误造成呆料等现象，业务端及供应链未严加管控，靠后台物控端反查反馈才调整处理。", "fullContent": "复盘人 何艳娟 负责类别 数据 日  期 2026.7  事件类型：显示拓展手工备货订单流程事项\n事件回顾\n事件简述\n显示拓展的手工备货订单从通知备货→系统生成→物控跟进交付→转换正式订单→正式订单生效→生效通知及反馈流程上多次出现信息时间差、无人跟进、备货要求日期已过期仍未建单、转换订单顺序错误造成呆料等现象，业务端及供应链未严加管控，靠后台物控端反查反馈才调整处理。\n目标与达成\n原定目标\n1、显拓的手工备货订单全流程（通知备货→系统生成→物控跟进交付→切换正式订单→备货闭环）节点顺畅、信息准确、可追溯\n2、业务端、供应链按节点及时跟进闭环，杜绝呆料产生\n3、物控端由\"事后查漏补缺\"转向\"事中监控\"模式\n4、备货订单转换正式订单准确率 100%\n实际达成\n1、备货到正式建单流程多处出现信息误差（系统数据与实际备货情况不一致），出现异常后被动处理\n2、订单生效通知、反馈等关键节点无人跟进，备货订单齐套日期已过期仍未建正式订单现象较多（310000006448、310000006442、310000006441、310000006440等）\n3、部分备货订单转换正式订单时顺序错误（先建正式订单后删除备货订单，系统需求重复），导致呆料产生（310000006448呆606套）\n4、业务端、供应链未严加管控，依赖物控端事后查询反馈才调整处理，处于被动救火状态\n5、备货订单转换正式订单准确率均远低于目标值，多次发生大量备货后少量建单，无法完全消耗备货原材\n根因分析\n直接原因\n1、手工备货订单各节点责任未明确到人，关键节点（生效通知、反馈）缺乏自动催办机制\n2、显拓当前没有成熟的备货到转单流程，依赖线下邮件传达备货信息，存在信息孤岛和延迟\n3、业务端、供应链对备货订单流程节点缺乏主动跟进意识\n4、业务端内部人事调整，工作交接环节潦草，交接期无人负责\n深层原因\n1、整个备货订单转正式订单流程未线上化进行，未建立订单逾期、数量差异等预警机制，仅靠\"人盯人\"，缺乏系统化管控\n2、业务端与后台对\"备货订单\"的目标认知不一致（业务端注重市场开拓速度，后台注重原材库存健康），缺乏统一目标对齐\n3、 跨部门（业务、供应链、后台）协同机制缺失，缺乏定期复盘制度\n4、业务端管理不足，异常发生后无明确追责机制，导致各方重视度不足，异常复发\n解决方案\n临时方案\n1、物控端每周一三五整理出显拓手工备货订单，与供应链逐一核对备货状态、生效时间、转换情况\n2、 对已过期未建单、转换顺序异常的订单及时反馈上浮，跟催业务处理并给出消耗方案\n3、 业务端、供应链各指定对接人，备货订单转正式订单的关键节点即时通知后台，保证交付\n4、异常订单升级处理：24小时内未闭环的，邮件通报该事件\n长期措施\n1、 推动业务端在系统中增加\"备货订单全生命周期跟踪模块\"：含时效预警、节点超时自动提醒、转换优先级规则\n2、规范手工备货到正式订单生效流程的操作并制定文件，明确业务端、供应链、物控端各节点的工作内容与责任划分\n3、 建立月度跨部门复盘机制（业务 + 供应链 + 物控），输出异常案例清单与改进措施\n4、建议将备货订单流程KPI纳入业务与后台双向考核（按时建单率、转换准确率、呆料率）\n经验沉淀与后续追踪\n留下什么、如何闭环？\n【留下什么】\n1、复盘案例，业务、供应链规范手工备货到正式订单生效流程的操作标准化\n2、显拓业务借鉴海外订单的系统推送备货机制，建立自己的线上备货流程\n3、数据整理归纳，以便后续超期原材库存反查追溯\n【如何闭环】\n1、物控端及时反馈异常，与供应链、业务三方沟通临时解决方案，同时跟踪执行效率和异常订单清理进度\n2、推动显拓的备货订单流程上线，并参与后期测试\n3、物控端反馈上浮异常问题点，科室领导出面沟通业务内部整改"}, {"id": 25, "memberId": 25, "reviewer": "何艳娟", "category": "数据", "date": "2026.7", "type": "科室数据类工作引入AI工具使用情况", "title": "5月下旬公司推广使用AI工具，在日常工作中逐步引入AI工具辅助完成部分数据计算汇总、呆料/库存及周转浮动分析、科室KPI考核看板生成、异常数据核查等任务。通过A...", "summary": "5月下旬公司推广使用AI工具，在日常工作中逐步引入AI工具辅助完成部分数据计算汇总、呆料/库存及周转浮动分析、科室KPI考核看板生成、异常数据核查等任务。通过AI工具，在数据公式生成、数据透视、多源数据整合等方面取得较大效率提升，但在业务语义理解、数据口径一致性、复杂异常判断等方面仍存在不足，导致部分结果需要人工二次校验，整体增效未达预期。", "fullContent": "复盘人 何艳娟 负责类别 数据 日  期 2026.7  事件类型：科室数据类工作引入AI工具使用情况\n事件回顾\n事件简述\n5月下旬公司推广使用AI工具，在日常工作中逐步引入AI工具辅助完成部分数据计算汇总、呆料/库存及周转浮动分析、科室KPI考核看板生成、异常数据核查等任务。通过AI工具，在数据公式生成、数据透视、多源数据整合等方面取得较大效率提升，但在业务语义理解、数据口径一致性、复杂异常判断等方面仍存在不足，导致部分结果需要人工二次校验，整体增效未达预期。\n目标与达成\n原定目标\n1. 提升数据类工作效率30%以上2. 降低逻辑复杂的数据报表人工处理时的错误率\n3. 缩短周/月类数据制作周期，优化时长4. 沉淀可复制AI应用经验\n实际达成\n1. 单一计算汇总类数据整理效率提升约50%，例：所有物料使用机型表已完成测试并使用，准确率100% 2. 复杂报表仍需大量人工干预，生成结果不理想3. 分析类数据报表生成结果比较笼统，不够贴合实际应用场景\n4. 针对科室考核看板、数据知识库已初步形成记忆和技能，可以重复更新使用\n根因分析\n直接原因\n1. AI工具未关联公司内部使用系统，对物控专业术语、物料规则、工厂间数据差异、归属部门划分理解不足\n2. 输入数据格式不统一，源系统导出字段差异大，需要人工干预调整\n3. 复杂业务逻辑（如替代料、工单物料差异、临时变更）AI难以准确处理，需要人工补充要求很多细节规则，不断修改\n4. AI工具缺乏工作场景数据填充，未形成使用习惯，结果不够标准化，脱离实际诉求\n深层原因\n1. 数据治理基础薄弱，未建立统一的数据字典和口径标准\n2. AI应用培训不足，使用时对工具能力和边界了解不够彻底\n3. 未建立公司物控领域知识体系，AI无法调用业务上下文识别操作\n4. 现有数据路径未针对AI辅助进行优化，人工衔接成本较高\n解决方案\n临时方案\n1. 建立常用数据报表AI记忆和技能2. 制定AI输出时保留处理过程规则事项，人工复核结果\n3. 对高频使用数据场景制作标准化输入模板，锁定计算逻辑4. 汇总AI使用问题反馈官方，高度关注官方使用策略\n长期措施\n1. 建设公司物控领域知识体系，统一物料、工厂、KPI口径 2. 制定AI辅助数据作业SOP（标准作业程序），明确适用场景与边界3. 积极参与AI普及培训，提升数据岗位AI工具使用能力4. 推动关键数据源标准化改造，减少人工清洗5. 协同公司内部IT顾问，探索本地化AI工具或插件\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1. 持续融合AI工具到工作场景中，让AI成为工作得力助手\n2. 制定个人“使用-反馈-修正”月度复盘规划\n3. 推广AI工具使用范围，关注公司内部工具插件，及时关联测试应用\n4. 下季度跟踪：复核工时占比、AI输出一次准确率、岗位覆盖率\n\n物控科复盘"}, {"id": 26, "memberId": 26, "reviewer": "梁亚妮", "category": "纸箱、EPS、EPE类", "date": "3月17日-6月22日", "type": "供应商停止接单及移模过渡期管控，前瞻性协调保障生产连续性", "title": "3月17日，供应商广润突然发函通知停止接单，提出3个月过渡期后将模具全部拉回，移交给智能装备生产。物控第一时间联系商务丘健堃确认情况，得知双方已确认移模方案，设...", "summary": "3月17日，供应商广润突然发函通知停止接单，提出3个月过渡期后将模具全部拉回，移交给智能装备生产。物控第一时间联系商务丘健堃确认情况，得知双方已确认移模方案，设有一个3个月的过渡期。物控随即提出前瞻性建议：过渡阶段需特别留意系统采购订单的平稳下达，提前在系统中维护好智能装备的相关资料，避免移模后供应商信息不对称；同时建议移模日期确定后，商务需提前10天或半个月以邮件形式同步告知计划、生产等部门。3...", "fullContent": "复盘人 梁亚妮 负责类别 纸箱、EPS、EPE类 日  期 3月17日-6月22日  事件类型：供应商停止接单及移模过渡期管控，前瞻性协调保障生产连续性\n事件回顾\n事件简述\n3月17日，供应商广润突然发函通知停止接单，提出3个月过渡期后将模具全部拉回，移交给智能装备生产。物控第一时间联系商务丘健堃确认情况，得知双方已确认移模方案，设有一个3个月的过渡期。物控随即提出前瞻性建议：过渡阶段需特别留意系统采购订单的平稳下达，提前在系统中维护好智能装备的相关资料，避免移模后供应商信息不对称；同时建议移模日期确定后，商务需提前10天或半个月以邮件形式同步告知计划、生产等部门。3月18日，物控与商务现场核对广润移模事宜，从系统导出广润叫料先后顺序的数据供商务参考。4月初，广润首批2款模具（1288、1196）完成移模至智能装备。然而，后续因模具款未解决，剩余二十多套模具广润不同意移模。4月至6月期间，多次出现系统仍向广润下达采购订单但广润拒绝生产的情况。例如，N100204-001127-003（6月22日生产需用，系统订单已取消但模具未移模，广润以\"已发停产告知函\"为由拒绝交货）；N100204-000933-002（系统仍为广润，实际模具已转装备）。物控反复协调商务跟进移模进度，同时协调智能装备紧急试模补料，并提醒商务及时调整系统未清PO。\n目标与达成\n原定目标\n3个月内完成广润全部模具移模至智能装备，确保生产平稳过渡，移模期间不停线。\n实际达成\n部分模具完成移模——5套模具移至智能装备（CW-2369、1137、1124、1135、1165）。过渡期间多次发现系统仍向广润下单但广润拒绝生产的问题，物控及时协调处理：协调智能装备紧急试模补料（比如N100204-000933-002这款需求102个，广润仅98个库存，让装备试模时带了几套出来应急），并提醒商务及时调整系统未清PO。6月22日，N100204-001127-003面临24号生产停线风险，物控协调智能装备当天优先调模买配件，试模补料，化解了停产风险。差距：剩余二十多套模具因模具款未解决迟迟未完成移模，过渡期远超原定3个月，生产持续面临断供风险。\n根因分析\n直接原因\n广润因模具款未支付不同意移模——款到才安排移模和后续事宜。商务端与广润的模具款纠纷未在停止合作前明确解决，导致移模进度严重滞后。\n系统未及时配置供应商信息——模具已转智能装备，但系统仍向广润下达采购订单，物控安排广润交货，广润拒绝生产才知晓，形成信息差。\n深层原因\n1. 供应商退出机制不完善：模具款、库存清理、系统切换等商务条款未在停止合作前明确解决，导致供应商以模具款为筹码拖延移模，物控处于被动。 2. 系统层面的供应商切换流程缺失：移模期间系统信息与实际供应方不一致，系统仍按原供应商下达采购订单，缺乏移模状态的系统标识和切换校验机制。 3. 跨部门协调机制不足：商务负责模具款谈判和移模安排，物控负责根据系统采购订单跟进交付，双方信息不同步——商务已谈移模，但未及时调整系统配置，系统仍下单给广润，物控跟进交货时，广润拒绝生产，才能发现异常。\n解决方案\n临时方案\n物控反复协调商务跟进移模进度，多次微信、电话提醒。\n2. 从系统导出广润叫料先后顺序数据（ZMMR372数据）供商务参考，帮助确认哪些料号模具需优先拉回。 3. 对已移模物料及时提醒商务调整系统未清PO（如N100204-000933-002系统仍为广润，实际模具已转智能装备）。 4. 对未移模物料协调广润按在途PO交货，或协调智能装备紧急试模补料。\n长期措施\n1. 建立供应商退出标准流程：明确模具款结算、库存清理、系统配置、移模时间节点等各环节的责任人和完成时限，在停止合作函发出后30天内完成全部移模。 2. 系统层面建立供应商切换的校验机制：移模期间在系统中标注\"移模中\"状态，系统自动提醒操作人员确认实际供应方，避免向已停止合作的供应商下达采购订单。 3. 建立跨部门移模协调机制：商务、物控、计划三方建立移模跟进群，每周同步移模进度、系统切换状态和库存消耗情况。 4. 将物控在移模初期提出的建议固化为标准动作：移模日期确定后提前10天至半个月以邮件形式同步告知计划、生产等端口。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n经验沉淀：物控在事件初期就提出了前瞻性建议（提醒商务提前维护智能装备系统资料、移模日期确定后提前10天或半个月邮件告知各端口），跟踪移模进度中，多次发现系统仍向广润下单的问题并及时反馈处理。事件暴露了供应商退出机制的不完善——模具款纠纷、系统配置、库存清理等环节缺乏标准化流程，导致一个3个月过渡期的移模拖延至3个月以上仍未完成，物控反复\"救火\"。 固化为机制： - 供应商退出标准流程（含模具款、库存、系统配置各环节时限） - 移模期间系统\"移模中\"状态标识 - 跨部门移模协调群周报机制 - 移模日期提前10天邮件告知机制"}, {"id": 27, "memberId": 27, "reviewer": "梁亚妮", "category": "纸箱、EPS、EPE类", "date": "3月19日-5月2日", "type": "供应商交付紧张与来料质量异常双重挑战，从远程协调到现场出差推动问题解决", "title": "供应商科信达自3月中旬起频繁出现交付紧张和来料质量异常，是本季度异常频次最高的供应商。 交付方面：3月19日物控从系统导出深广两基地纸箱厂家未清订单数据，科信达...", "summary": "供应商科信达自3月中旬起频繁出现交付紧张和来料质量异常，是本季度异常频次最高的供应商。 交付方面：3月19日物控从系统导出深广两基地纸箱厂家未清订单数据，科信达未清订单占比33.4%（491,434件），远超其他供应商。3月26日更新数据，科信达仍占比28.1%。4月9日，物料N100211-003141-001（计划排9号交3,000个）交付紧张——供应商生产经理中途拆机做其他款。物控远程紧盯进...", "fullContent": "复盘人 梁亚妮 负责类别 纸箱、EPS、EPE类 日  期 3月19日-5月2日  事件类型：供应商交付紧张与来料质量异常双重挑战，从远程协调到现场出差推动问题解决\n事件回顾\n事件简述\n供应商科信达自3月中旬起频繁出现交付紧张和来料质量异常，是本季度异常频次最高的供应商。 交付方面：3月19日物控从系统导出深广两基地纸箱厂家未清订单数据，科信达未清订单占比33.4%（491,434件），远超其他供应商。3月26日更新数据，科信达仍占比28.1%。4月9日，物料N100211-003141-001（计划排9号交3,000个）交付紧张——供应商生产经理中途拆机做其他款。物控远程紧盯进度，要求紧急安排上机做货，并连班赶工，最终协调到\"明天至少交2,000个保底，欠数按后天早车到货确保\"。 质量方面：4月9日起，科信达供应的夏普55寸/65寸/100寸纸箱多次来料不合格——摇盖错位、洞口偏大（55寸）、纸箱折弯处面纸开裂80%（100寸）等。中间大印刷机故障进一步加剧了问题，物控协调安排厂家挑选复检、宽收使用应急处理。 现场出差：4月17日，物控出差科信达，现场了解其产能情况并协调生产满足交付。4月28日，物控再次出差科信达（与SQE曹正艺、质量卢小保同行），实地了解交付紧张和品质异常的核心原因。出差报告确认：部分纸箱规格（宽度＜124mm）超出半自动设备作业范围，需全程人工手钉，操作效率低、产能受限；新员工岗前培训不足，首检巡检流程未严格落实。 新人辅导：4月底，科信达跟单小谢离职，新跟单小杨接手。物控全程辅导其新人接手工作——从交货节奏、信息跟进、异常反馈到与报缺员的对接细节，逐一指导。\n目标与达成\n原定目标\n科信达供应的纸箱按时按质交付，确保深广两地生产平稳，不停线、不批量退货。\n实际达成\n交付紧张问题持续存在，但通过物控协调有所缓解——物控两次向商务反馈科信达未清订单占比数据（33.4%降至28.1%），建议调整采购策略分散交付风险。物料N100211-003141-001通过远程紧盯进度、要求连班赶工，最终未造成停线。质量问题通过安排厂家挑选复检、宽收使用应急处理，保障了生产连续性，但未从根本上解决。两次出差现场推动了问题解决——出差报告精准定位了核心原因（工艺与设备适配性不足、现场质量管控薄弱），提出了流程管控和前端协同两方面的改进措施。新跟单交接平稳完成——物控全程辅导杨友娟熟悉交货节奏、信息跟进和异常反馈流程。差距：科信达交付紧张和品质异常问题仍持续发生，系统性和根源性改进尚未落地。\n根因分析\n直接原因\n1. 订单集中导致产能饱和：科信达未清订单占比33.4%，其产能不堪重负。 2. 部分纸箱规格（宽度＜124mm）超出半自动设备作业范围，需全程人工手钉，操作效率低、产能严重受限。 3. 大印刷机故障，导致100寸纸箱生产中断，来料不合格（面纸开裂80%）加剧交付紧张。 4. 生产经理中途拆机做其他款——物料N100211-003141-001已上机印刷，生产经理让人拆下来做别的款。 5. 新员工岗前培训不足，首检、巡检流程未严格落实，导致打钉偏位、钉到内容等质量问题重复发生。 6. 更换跟单人员（小谢离职、小杨接手），工作衔接出现断层。\n深层原因\n1. 采购策略未充分分散：科信达未清订单占比33.4%，采购过度集中于单一供应商，产能受限时，风险集中。 2. 部分工艺设计与现有生产设备适配不足：窄幅纸箱（宽度＜124mm）需全程人工手钉，供应商内部缺乏联合评审机制，未充分考虑生产效率和品质可控性。 3. 供应商现场质量管控执行不到位：新员工岗前培训不足、首检巡检流程未严格落实，反映供应商内部质量管理体系薄弱，缺乏有效的监督和考核机制。 4. 供应商人员流动频繁，交接机制不完善：更换跟单人员直接影响信息传递和工作衔接，缺乏标准化的交接流程。\n解决方案\n临时方案\n1. 物控两次出差科信达现场了解原因并推动处理：4月17日出差了解其产能情况；4月28日与SQE曹正艺、质量卢小保同行出差，实地落实交付紧张和品质异常的核心原因。 2. 远程紧盯物料N100211-003141-001交付进度：要求跟单现场查看打钉进度，连班赶工，最终协调到\"明天至少交2,000个保底，欠数按后天早车到货确保\"。 3. 来料不合格安排厂家挑选复检、宽收使用：协调质量端安排厂家跟线处理应急宽收，当天差50个就要求供应商立即安排人挑选，多挑一些给第二天应急。 4. 向商务反馈科信达未清订单占比数据（33.4%降至28.1%），建议调整采购策略分散交付风险。 5. 全程辅导新跟单工作交接：从交货节奏、信息跟进、异常反馈到与报缺员的对接细节逐一指导。\n长期措施\n1. 推动供应商执行首检并留存记录，图纸随工单全程流转，新员工产品单独存放、打包前全检。 2. 后续针对新品，要求供应商工程、生产及业务提前联合评审，重点识别窄幅纸箱等与设备适配性不足的设计，与客户设计端提前沟通优化方案，兼顾生产效率与品质可控性。 3. 推动商务调整采购策略，分散订单降低集中度。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n经验沉淀：物控通过系统数据分析（未清订单占比33.4%）客观呈现了科信达供应集中风险，为采购策略调整提供了数据支撑。两次出差现场体现了物控从远程协调到现场落实的递进式问题解决能力——出差报告精准定位了核心问题（工艺与设备适配性不足、现场质量管控薄弱），提出了流程管控和前端协同两方面的改进措施。更换跟单人员的全程辅导交接，体现了物控对供应商管理的主动引导和耐心。固化为机制： - 供应商首检执行和联合评审机制 - 供应商关键岗位人员变动培训机制\n\n物控科复盘"}, {"id": 28, "memberId": 28, "reviewer": "陈银花", "category": "水印箱&彩箱", "date": "7月13日", "type": "交付异常", "title": "因指令下达过晚与报缺与物控计划冲突，导致出口订单（2640267F&2640268F）6120套纸箱未能在6月20日装柜，造成压柜。", "summary": "因指令下达过晚与报缺与物控计划冲突，导致出口订单（2640267F&2640268F）6120套纸箱未能在6月20日装柜，造成压柜。", "fullContent": "复盘人 陈银花 负责类别 水印箱&彩箱 日  期 7月13日  事件类型：交付异常\n事件回顾\n事件简述\n因指令下达过晚与报缺与物控计划冲突，导致出口订单（2640267F&2640268F）6120套纸箱未能在6月20日装柜，造成压柜。\n3、运力死锁（17日18:00 vs 18:15） 关键冲突点：供应商在17日18:00前（即接到改期通知之前）已按原计划压好了18日送货的车辆。当18:15接到“改期18日送齐”的紧急指令时，供应商已无法调动足够运力，只能先派3辆车送部分货物，原计划靠这3辆车返厂后二次往返补齐。\n4、二次往返失败（18日全天） 18日当天，3辆车需兼顾“显示二楼、储运部、海外五楼”多点卸货，叠加端午节前严重交通堵塞，车辆返厂极晚，无法发出第二趟补货，也未能提前压好20日的早班车。\n5、最终后果（20日） 因19日放假、18日未送齐且未提前预警，20日清晨无货可装，导致装柜计划被迫压柜\n目标与达成\n原定目标\n订单计划6月20日走柜，6月18日交齐订单\n实际达成\n6月20日走柜当天交齐\n根因分析\n直接原因\n1、初始指令矛盾（17日17:43） CKD部通知供应商20日送货，但供应商明确反馈20日送不齐、只能18日分批送。CKD部以“仓库无位”为由，回复暂时不安排送。\n2、紧急改期（17日18:15） 物控端考虑19日端午放假，紧急协调储运部确认18日可收货后，于18:15通知供应商改期至18日送齐。供应商未送齐，未及时反馈\n深层原因\n运力死锁（17日18:00 vs 18:15） 关键冲突点：供应商在17日18:00前（即接到改期通知之前）已按原计划压好了18日送货的车辆。当18:15接到“改期18日送齐”的紧急指令时，供应商已无法调动足够运力，只能先派3辆车送部分货物，原计划靠这3辆车返厂后二次往返补齐。\n4、二次往返失败（18日全天） 18日当天，3辆车需兼顾“显示二楼、储运部、海外五楼”多点卸货，叠加端午节前严重交通堵塞，车辆返厂极晚，无法发出第二趟补货，也未能提前压好20日的早班车。\n5、最终后果（20日） 因19日放假、18日未送齐且未提前预警，20日清晨无货可装，导致装柜计划被迫压柜\n解决方案\n临时方案\n原回复20日下午3点前送到。协调供应商加派人员跟进装车，于下午13：30送到我司；\n\n长期措施\n装柜2日计划锁死：建议装柜日N+1计划17:00后，禁止任何部门发起\"收货日期变更\"。所有送货时间必须在当天日下班前锁定。取消每日确认环节，出货计划一旦发布，视同储运部需协调库容和收货能力。物控不再每日发送确认请求，按计划直接通知供应商送货即可。避免来回确认、信息误导。\n物控严格要求供应商当天送不齐的，必须在下午3点前电话+微信文字双渠道通反馈物控，针对节前/周一等特殊时段，要求供应商提前一天压好车（即装柜日前一天下班前完成装车并封车），杜绝“当天往返二次补货”的风险操作模式。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n教训1：没有跟踪的指令，等于废纸。\n物控的职责不是“通知了”，而是“确认收到了、确认装车了、确认上路了、确认到达了”。四个确认缺一不可，尤其在节假日。\n教训2：供应商的“尽力”≠“承诺”。\n当供应商回复“尽量安排18日送齐”时，必须强制追问：“若18日送不齐，最晚几点能确定？”。\n教训3：交通拥堵是常态，不是意外。\n节前送货必须执行 “早鸟策略” （凌晨5点发车），凡涉及跨市运输的紧急订单，默认堵车时间翻倍计算，用残酷的物理冗余对冲不确定性。"}, {"id": 29, "memberId": 29, "reviewer": "陈银花", "category": "水印箱&彩箱", "date": "7月13日", "type": "交付异常", "title": "三星G25项目6月需求：55寸15,663台、65寸14,069台、75寸46,638台。因集中要货、要货提前、粘箱工艺复杂、新品样品确认晚、价格确认晚等原因，...", "summary": "三星G25项目6月需求：55寸15,663台、65寸14,069台、75寸46,638台。因集中要货、要货提前、粘箱工艺复杂、新品样品确认晚、价格确认晚等原因，导致交付异常。", "fullContent": "复盘人 陈银花 负责类别 水印箱&彩箱 日  期 7月13日  事件类型：交付异常\n事件回顾\n事件简述\n三星G25项目6月需求：55寸15,663台、65寸14,069台、75寸46,638台。因集中要货、要货提前、粘箱工艺复杂、新品样品确认晚、价格确认晚等原因，导致交付异常。\n目标与达成\n原定目标\n6月按计划完成三星G25项目全部纸箱交付： 55寸15,663台、65寸14,069台、75寸46,638台，合计76,370台。从6月21日开始陆续交货。\n实际达成\n经多方协调最终达成情况： 1）55寸：鸿晖厂家6月25日起分批交货，6月29日交齐（延迟约4天）。 2）65/75寸：新森奇厂家新品6月23日起分批交货，6月29日基本交齐。唯一延后的为N100210-001438-002（75寸粘箱+粘彩贴），7月4日完成（延迟约13天）。 3）75寸配套地盖：成功转单科信达2万台，满足走柜需求。 整体交付延迟约2-5天，未造成产线停线。\n根因分析\n直接原因\n1、集中要货且要货提前，产能准备时间不足。 2. 新品样品/价格确认晚（6月18日），距要求交货（6月21日）仅2-3天，生产周期严重不足。\n3. 多款物料为粘箱工艺（部分叠加粘彩贴工艺），需人工操作，日产能仅为正常产能的1/3~1/2 4. 75寸订单量大（单笔10,544台）、箱体面积大，仓储和周转压力大。 5. 新森奇原产能仅600/天，远不能满足6月集中排产需求。\n深层原因\n1. 新品开发流程中样品确认与排产时间脱节——从确认到要求交货仅2-3天，未给供应商预留合理生产准备周期。 2. 订单集中下达单一供应商（新森奇独家），未提前评估产能瓶颈及多货源备份方案。 3. 复杂工艺物料（粘箱+粘彩贴）的产能评估机制缺失，未针对人工工序提前核算日产能与需求匹配度。 4. 大体积物料仓储及周转能力未纳入排产评估体系，导致75寸需边生产边交付以防爆仓。\n解决方案\n临时方案\n1. 协调鸿晖厂家加班生产55寸粘箱，6月25日起分批交货，6月29日交齐。 2. 协调新森奇厂家增派人工，产能从600/天大幅提升至8,000~9,000/天。 3. 75寸配套地盖N100203-000001-0B3，紧急协调转单科信达2万台，弥补新森奇产能缺口。 4. 75寸大体积物料采用边生产边交付模式，避免仓库爆仓。\n长期措施\n1. 新品开发阶段提前锁定样品确认和价格确认时间节点，排产前预留合理生产周期（建议≥20天）。 2. 建立复杂工艺物料（粘箱、粘彩贴）日产能评估机制，排产前核算产能与需求匹配度。 3. 独家供应物料提前规划二供/多货源方案，避免产能集中风险。 4. 大体积物料纳入仓储周转评估，制定分批交付计划。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n沉淀经验：\n1、形成新品导入生产准备 ：样品确认、价格确认、工艺复杂度评估、产能核算、仓储评估。逐项签核确认后方可下达生产计划；\n2、定期核实各厂家未交订单：大订单量是否集中排产、集中要货。避免产能不足等因素造成供货不足问题。\n\n物控科复盘"}, {"id": 30, "memberId": 30, "reviewer": "冀媛媛", "category": "美工", "date": "7月16日", "type": "供应商异常（品质异常类）", "title": "4月14日料号N080104-008144-001的100A8H后盖贴纸首批到货，18日IQC常温测试不合格；19日加急重交仍不合格，面临20号晚班停产，影响生...", "summary": "4月14日料号N080104-008144-001的100A8H后盖贴纸首批到货，18日IQC常温测试不合格；19日加急重交仍不合格，面临20号晚班停产，影响生产交付与客户履约。", "fullContent": "复盘人 冀媛媛 负责类别 美工 日  期 7月16日  事件类型：供应商异常（品质异常类）\n事件回顾\n事件简述\n4月14日料号N080104-008144-001的100A8H后盖贴纸首批到货，18日IQC常温测试不合格；19日加急重交仍不合格，面临20号晚班停产，影响生产交付与客户履约。\n目标与达成\n原定目标\n保障4月20日晚班580PC生产计划准时落地，物料检验合格后正常投入，按期完成产出与订单交付，无停线风险。\n实际达成\n未按标准合格收货，二次交货仍不合格；通过临时宽收+工艺补强保障580PC产出，质量未达原标准，交期目标达成。\n根因分析\n直接原因\n供应商首次交货常温测试不合格；加急改用强粘胶重交后，二次IQC常温测试仍不合格，无合格物料可用。\n深层原因\n直接原因：胶水选型与制程不稳定，粘接力不达标；深层原因：供应商质量管控体系缺失，急单无验证流程；机制层面：缺少急料准入机制与供应商应急质量保障机制。\n解决方案\n临时方案\n紧急拉通质量与SQE，对580PC宽收并增加底涂剂工艺补强；到货即送检、快速决策，20号晚班计划保住，无停产。\n长期措施\n①建立急料先检快批流程，缩短异常响应时间；②SQE驻厂辅导供应商优化胶水选型与制程工艺；③新增供应商应急质量承诺条款与暂停接单机制。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1. 沉淀急料异常快速响应SOP，明确责任人与时限要求\n2. SQE跟踪改善验证，库存暂停下发，改善闭环后方可恢复接单与发料\n3. 后续追踪：SQE驻厂改善验证，预计5月底前完成胶水工艺优化闭环\n\n事件类型：美工资料更新交付异常\n事件回顾\n事件简述\n三星订单N080105-005165-001共37746本需返工，预估189工时，供需双方均无产能承接，存在停线、交付延误及客户满意度受损风险。\n现场突发问题：外协供应商产能饱和拒派工，内部排程无余量无法承接，原定分工返工方案失效，整体返工工作陷入停滞状态。\n目标与达成\n原定目标\n要求供应商全额免费完成100%返工，以200本/人/小时效率推进，实现零额外成本、零停线、零交付延误的量化目标。\n实际达成\n经多轮沟通谈判，供应商完成全量免费返工，返工完成率、目标达成率均100%，实现零费用、零延误、零产线停线成效。\n根因分析\n直接原因\n供应商产能负荷信息未提前同步，返工需求下达时已满载，且内部生产排程无弹性，无法承接临时返工任务。\n外协供应商产能饱和拒派工，内部排程无余量无法承接，原定分工返工方案失效，整体返工工作陷入停滞状态。\n深层原因\n无供应商产能预警、急料返工协同机制，缺少专项SOP，关键客户返工应急预案及备用供应商资源池存在缺失。\n解决方案\n临时方案\n先协商达成半量返工+视频指导临时方案，排查内部产能后持续施压，最终促成供应商全量免费返工。\n分步落地应急举措，有效规避产线停线、订单延误问题，全程无额外费用产生，各项应急目标全部圆满达成。\n\n长期措施\n搭建供应商产能预警、急料返工SOP体系，储备备用供应商，预留弹性产能，对重点客户订单前置风险排查。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n固化四步返工处置机制与保交付策略，3日内更新SOP，以新流程落地验证成效，对涉事供应商予以免扣分记录。\n\n物控科复盘"}, {"id": 31, "memberId": 31, "reviewer": "李楚楚", "category": "塑胶件", "date": "2026-04-07", "type": "43G25底座黎宇交付脱期", "title": "印度Haier客户2620299F1订单底座N040113-003340-002 和 N040113-003341-002 数量：4760套，两款底座未能按原定...", "summary": "印度Haier客户2620299F1订单底座N040113-003340-002 和 N040113-003341-002 数量：4760套，两款底座未能按原定时间交付，造成交付脱期。", "fullContent": "复盘人 李楚楚 负责类别 塑胶件 日  期 2026-04-07  事件类型：43G25底座黎宇交付脱期\n事件回顾\n事件简述\n印度Haier客户2620299F1订单底座N040113-003340-002 和 N040113-003341-002 数量：4760套，两款底座未能按原定时间交付，造成交付脱期。\n目标与达成\n原定目标\n散件出货按上3日走计划交付\n实际达成\n4月7日出货当日交付达成\n根因分析\n直接原因\n1. 2026年3月4日下PO后，黎宇直至3月23日才确认该款外销底座有喷油工艺，延误核心生产准备周期；\n2.人员离职未交接，未及时跟进外发喷油进度；\n3.清明假期期间喷油厂放假3天，进一步拉长喷油周期，最终导致上了3日出货计划未提前交付。\n深层原因\n1. 供应商管理漏洞：未建立外销产品是否需喷油确认的前置预警机制，喷油工艺未纳入生产排期关键节点；\n2.人员交接机制缺失：人员离职未完成工作交接，导致外发喷油跟进断层；\n3. 供应商协同不足：未与喷油厂约定假期产能预留及应急加工方案，对节假日生产风险预判不足；\n4.内部流程管控薄弱：订单跟进全流程缺乏节点化跟踪，未及时发现底座是否有喷油工艺呆滞缺失等风险。\n解决方案\n临时方案\n1. 与黎宇厂家协调喷油厂优先对该批底座，加急完成喷油工序，同步安排物流直发，缩短交付周期；\n2.专人全程跟进生产及物流进度，每2小时同步更新底座最新进度，确保异常及时处理；\n长期措施\n1. 要求供应商完善管理体系：建立外销产品颜色确认标准化流程，明确颜色确认截止时间及责任到人，纳入订单排期关键节点；\n2.规范人员交接制度：制定物料岗位离职交接清单，明确外发加工跟进、供应商沟通等核心工作交接要求，避免工作断层；\n3.节假日预留应急加工方案，提前锁定假期生产排期；\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1.供应商人员变动直接影响交付稳定性：人员离职未交接，直接导致喷油外发进度无人跟进长达半个月。供应商关键岗位人员变动应作为物控侧重点监控信号；\n2.涉及有节假日需明确预留节假日缓冲，不能按自然天排产。\n3.跟踪黎宇整改落实情况：排查所有料号订单逐一核实是否涉及喷油等外发工艺，后续新增订单按排查机制执行；\n4.持续跟踪黎宇的交付准时率。"}, {"id": 32, "memberId": 32, "reviewer": "李楚楚", "category": "塑胶件", "date": "2026-06-30", "type": "天祥厂家2026年4~6月交付质量异常119起，5月尤为突出（70起），影响交付进度", "title": "4月质量异常15起→5月质量70起（峰值）→6月质量异常34起。宽收77起），点退/退回退走28起。最突出料号N040114-002598-001异常14次，平...", "summary": "4月质量异常15起→5月质量70起（峰值）→6月质量异常34起。宽收77起），点退/退回退走28起。最突出料号N040114-002598-001异常14次，平面度和总长持续超标，严重拖延交付。", "fullContent": "复盘人 李楚楚 负责类别 塑胶件 日  期 2026-06-30  事件类型：天祥厂家2026年4~6月交付质量异常119起，5月尤为突出（70起），影响交付进度\n事件回顾\n事件简述\n4月质量异常15起→5月质量70起（峰值）→6月质量异常34起。宽收77起），点退/退回退走28起。最突出料号N040114-002598-001异常14次，平面度和总长持续超标，严重拖延交付。\n目标与达成\n原定目标\n按系统叫料计划滚动交付\n实际达成\n\n根因分析\n直接原因\n新料模具导入量产，平面度/总长反复超标；\n尺寸系统性偏差未根除；\n海绵条、颜色、透光率等多项辅助问题叠加；4.5月新料集中爆发。\n深层原因\n首件确认缺失，同类问题连续7批重复；\n质量管控能力不足；\n物料有公差合理性未及时确认评估。\n解决方案\n临时方案\n：针1.N040114-002598-001前镜较为凸显，不良14次批平面度外凸变形、总长偏小、偏大，与反馈设计师安排试装55/65/75型号确认装配无问题可可应急允收。\n对轻微质量问题，有质量评估确认宽收或安排厂家跟线处理。\n3.反馈SQE部门对天祥质量异常专项分析推进改善。\n长期措施\n针对异常较为突出的料号进行模具改进；\n供应商月度评分纳入异常频次和宽收率；\n与设计沟通评估放宽公差或更改EDE资料以降低制造难度；\n经验沉淀与后续追踪\n留下什么、如何闭环？\n从“模具开发→新料导入→过程控制→异常响应\"全链条源头管控体系；供应能力评估和月度供应评分机制，从\"事后救火\"到\"事前预防\"的转变，从根本上降低质量异常对交付进度的影响。\n\n物控科复盘"}, {"id": 33, "memberId": 33, "reviewer": "张盼", "category": "型材中框装饰条底座、铭牌、画框", "date": "20260713", "type": "新品日产爬坡期进度异常，前期评估交期延迟", "title": "内销75吋-100吋Q8H通用新品热弯片材盖板N040115-000170-001 4月20号周要货3300PC，因热弯工序前期质量异常导致交期跳票，原承诺4月...", "summary": "内销75吋-100吋Q8H通用新品热弯片材盖板N040115-000170-001 4月20号周要货3300PC，因热弯工序前期质量异常导致交期跳票，原承诺4月8号开始110/天，跳票至14号开始220隔天交付，实际厂家未评估好新品爬坡期异常和物流三次周转时间时效，导致承诺交期严重跳票。", "fullContent": "复盘人 张盼 负责类别 型材中框装饰条底座、铭牌、画框 日  期 20260713  事件类型：新品日产爬坡期进度异常，前期评估交期延迟\n事件回顾\n事件简述\n内销75吋-100吋Q8H通用新品热弯片材盖板N040115-000170-001 4月20号周要货3300PC，因热弯工序前期质量异常导致交期跳票，原承诺4月8号开始110/天，跳票至14号开始220隔天交付，实际厂家未评估好新品爬坡期异常和物流三次周转时间时效，导致承诺交期严重跳票。\n目标与达成\n原定目标\n4月20号周完成3300PC交付。\n实际达成\n实际4月28号晚完成3300PC和64PC不良补货，较原目标延迟1天，未造成生产计划变更。\n根因分析\n直接原因\n热弯工序前期质量异常导致厂家原本预估的日产110PC及开始交付时间点未达成，且供应商未提前向我司反馈报备异常情况、未升级风险，输出应急预案。\n深层原因\n新品封样晚—3月12号完成；\n两个重点工序外发，交付节点把控难度大（热弯、CNC两个工序外发） ；\n原材及工序和质量问题突出；首先第一次新料原材周期10天、印刷工序 7天，再外发到热弯厂调试加工生产，热弯日产评估120PC/天，物流1天到高绮厂家，收货安排全检，良品再物流外发到CNC工厂生产加工，再物流回料检验—贴背胶—贴膜—出货前检验—成品包装出货；\n厂家内部采购未及时跟进各外发厂回料情况以及合理估算整个生产交付节点。\n解决方案\n临时方案\n1.持续微信电话明确交付节点和数量给到厂家，同步告知其新品交付延期的追溯影响，同步交付风险传递给商务端；\n2.协同商务同事电话会议联系厂家领导层要求其协调上游热弯工厂再增开两套热弯模具以提升前工序日产到280每天，跟进其协调结果（20号新开模具上线和产出，同步梳理出前期各个工序结存，协调其后工序赶工，成品交付；\n3.要求厂家压缩物流时间—原热弯工序和外发CNC以及回料都是走物流，协调厂家把工序当天做出来的货当天流转到下工序生产，压缩交付时间；\n4.制定日交付计划，每天跟进其到货数量和时间点，出现异常（数量、时间点）及时反馈跟进异常处理。\n长期措施\n新料需要从各个层面了解其工序、生产工序是否外协、瓶颈工序、日产情况，做好多问为什么，总会有所收获；\n风险报备不只在交付端预警以及协调，同时需要线下线上同步知会到对应的计划人员，明确缺口数量以及时间节点，消除信息差；\n厂家跟单未及时给予解决的事情立刻同步找其上级领导，明确告知其延迟交付导致的风险以及责任追溯；\n复盘新品量产交付问题，形成问题库，优化交付流程，将交付达成率纳入供应商交付考核。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n事前多了解 、事中快传递 、事后勤复盘 。"}, {"id": 34, "memberId": 34, "reviewer": "张盼", "category": "型材中框装饰条底座、铭牌、画框", "date": "20260712", "type": "新品质量异常", "title": "5月红美资2620318G 新品底座N040111-000802-003 1500PC厂家首次生产，外观标准高，因多次返工造成原材损耗无法返修报废300PC，无...", "summary": "5月红美资2620318G 新品底座N040111-000802-003 1500PC厂家首次生产，外观标准高，因多次返工造成原材损耗无法返修报废300PC，无法清理出来足够良品满足交付要求节点。", "fullContent": "复盘人 张盼 负责类别 型材中框装饰条底座、铭牌、画框 日  期 20260712  事件类型：新品质量异常\n事件回顾\n事件简述\n5月红美资2620318G 新品底座N040111-000802-003 1500PC厂家首次生产，外观标准高，因多次返工造成原材损耗无法返修报废300PC，无法清理出来足够良品满足交付要求节点。\n目标与达成\n原定目标\n按平板厂家加工上线时间5月21号前交付完成。\n实际达成\n5月21号前交付1150PC，5月27号到齐全部数量，影响线外加工，未影响大线计划和订单出货期。\n根因分析\n直接原因\n新料号首次量产；\n无前期同类型产品经验值参考，原材备损投入不足；\n外观不良高、返工难度大、素材损耗过高。\n深层原因\n厂家未做足够的原材备料；\n厂家工序质量管控环节不到位，导致问题没有及时有效的暴露到交付层面；\n外观标准未细化、未及时拉通限度签样。\n解决方案\n临时方案\n确认该产品不用于生产线机器生产，仅在最后打包环节放入成品箱中同步打包入库；\n厂家交付前期1150PC正常包装放入成品箱打包入库，尾数350因不影响大线机器生产，沟通生产计划单位正常下机生产，待该物料交付完成后再组装最后返工放入成品箱入库。\n长期措施\n新料号首次量产，物控、商务联合部品、SQE评估损耗率参考值；\n厂家工程质量需明确返工次数上限，避免多少返工浪费时间等待未知结果风险，风险信息同步交付端，减少我司计划临时变动异常风险；\n双方单位保持生产进度、质量管控等方面信息透明公开及时。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n高标准外观件的交付产能瓶颈并不在于产能，往往受限于良率爬坡和返工损耗等不可控因素。"}, {"id": 35, "memberId": 35, "reviewer": "张盼", "category": "型材中框装饰条底座、铭牌、画框", "date": "20260712", "type": "新品质量异常", "title": "5月红美资2620318G 新品底座N040111-000802-003 1500PC厂家首次生产，外观标准高，因多次返工造成原材损耗无法返修报废300PC，无...", "summary": "5月红美资2620318G 新品底座N040111-000802-003 1500PC厂家首次生产，外观标准高，因多次返工造成原材损耗无法返修报废300PC，无法清理出来足够良品满足交付要求节点。", "fullContent": "复盘人 张盼 负责类别 型材中框装饰条底座、铭牌、画框 日  期 20260712  事件类型：新品质量异常\n事件回顾\n事件简述\n5月红美资2620318G 新品底座N040111-000802-003 1500PC厂家首次生产，外观标准高，因多次返工造成原材损耗无法返修报废300PC，无法清理出来足够良品满足交付要求节点。\n目标与达成\n原定目标\n按平板厂家加工上线时间5月21号前交付完成。\n实际达成\n5月21号前交付1150PC，5月27号到齐全部数量，影响线外加工，未影响大线计划和订单出货期。\n根因分析\n直接原因\n新料号首次量产；\n无前期同类型产品经验值参考，原材备损投入不足；\n外观不良高、返工难度大、素材损耗过高。\n深层原因\n厂家未做足够的原材备料；\n厂家工序质量管控环节不到位，导致问题没有及时有效的暴露到交付层面；\n外观标准未细化、未及时拉通限度签样。\n解决方案\n临时方案\n确认该产品不用于生产线机器生产，仅在最后打包环节放入成品箱中同步打包入库；\n厂家交付前期1150PC正常包装放入成品箱打包入库，尾数350因不影响大线机器生产，沟通生产计划单位正常下机生产，待该物料交付完成后再组装最后返工放入成品箱入库。\n长期措施\n新料号首次量产，物控、商务联合部品、SQE评估损耗率参考值；\n厂家工程质量需明确返工次数上限，避免多少返工浪费时间等待未知结果风险，风险信息同步交付端，减少我司计划临时变动异常风险；\n双方单位保持生产进度、质量管控等方面信息透明公开及时。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n高标准外观件的交付产能瓶颈并不在于产能，往往受限于良率爬坡和返工损耗等不可控因素。\n\n物控科复盘"}, {"id": 36, "memberId": 36, "reviewer": "章娉", "category": "本地化", "date": "6.30", "type": "流程缺失、预测 / 项目节点偏差", "title": "4.27 产品发起印度阿里郎本地化需求，项目推进 1个多月后暴露设备交期瓶颈问题：1. 供应商 Solum 分板设备采购周期 8-10 周，未提前识别下单，无法...", "summary": "4.27 产品发起印度阿里郎本地化需求，项目推进 1个多月后暴露设备交期瓶颈问题：1. 供应商 Solum 分板设备采购周期 8-10 周，未提前识别下单，无法满足 8.12 试产要求；2.TSMT 方案 EMMC 烧录工装生产需 6 周加跨境运输，配套烧录设备已停产，OTP 转录研发暂无落地方案；3. 前期报价、技术评估环节存在多重流程漏洞，分板器、烧录设备等关键配套设备未提前识别，风险滞后 2...", "fullContent": "复盘人 章娉 负责类别 本地化 日  期 6.30  事件类型：流程缺失、预测 / 项目节点偏差\n事件回顾\n事件简述\n4.27 产品发起印度阿里郎本地化需求，项目推进 1个多月后暴露设备交期瓶颈问题：1. 供应商 Solum 分板设备采购周期 8-10 周，未提前识别下单，无法满足 8.12 试产要求；2.TSMT 方案 EMMC 烧录工装生产需 6 周加跨境运输，配套烧录设备已停产，OTP 转录研发暂无落地方案；3. 前期报价、技术评估环节存在多重流程漏洞，分板器、烧录设备等关键配套设备未提前识别，风险滞后 2 个月暴露，试产窗口期严重压缩存在交付验证延期风险\n目标与达成\n原定目标\n8 月 6 日完成印度项目 SMT 试产；\n实际达成\n分板器设备预计8.20到货后进行试产，保障8.24号量产计划\n根因分析\n直接原因\n1. 技术沟通由采购单向中转，工程、研发未直接对接供应商，设备类需求未纳入强制评估清单；2. 项目启动后未第一时间拉通全流程里程碑，各部门时间认知不统一；\n深层原因\n第一层：SMT 本地化报价无标准化门禁流程，缺少资料审核、设备强制排查、价格评估三道管控节点；\n第二层：岗位职责未明确，工程技术早期介入无强制制度，采购、工程、产品协同链路无标准化要求；\n第三层：缺少项目风险分级升级、里程碑同步固化机制，无标准化工具（报价必填清单、设备风险排查表）支撑全流程管控；\n第四层：新项目启动无标准化前置检查清单，未将设备交期、试产硬节点作为立项前置准入条件。\n解决方案\n临时方案\n分板设备并行评估双路径：Solum 国内代购/直采，7 月 5 日前锁定采购路径并完成下单，压缩设备到货周期；\n2.EMMC 烧录专项攻坚：同步寻找二手烧录设备、外协烧录厂商、Solum 闲置设备调拨，\nTSMT 作为备选供应商长期储备，持续攻克 OTP 转录技术；\n短期搭建并行补救方案，暂缓交付延期风险，但仍无法完全保障 8 月试产节点，仅降低延期影响幅度。\n长期措施\n搭建SMT 本地化评估报价全流程，固化制度落地：\n1. 需求阶段：项目输出全项目里程碑，机芯专业人员标准化审核 BOM、设备治具清单；\n2. 询价技术阶段：工程直接对接供应商，强制排查分板 / 烧录 / 工装设备交期，输出红黄绿风险清单；\n3. 商务定价阶段：机芯专业人员用成本模型核验报价完整性、合理性；\n4. 项目执行阶段：长周期设备日清跟踪，风险分级升级机制\n配套机制：成立 SMT 报价小组、固化报价强制字段模板、搭建供应商红黄绿评分库、强制新项目工程早期介入；\n效果：从流程源头封堵设备漏评估、报价漏项、节点不同步问题，杜绝同类项目重大滞后风险。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n经验沉淀： SMT 本地化项目须建立执行全面流程；设备 / 治具为评估核心强制项，不可仅关注物料；项目里程碑同步、报价专业审核、技术直接对接三项动作缺一不可\n输出：《SMT 报价导入流程梳理》"}, {"id": 37, "memberId": 37, "reviewer": "章娉", "category": "本地化", "date": "6.30", "type": "流程缺失、需求临时变动", "title": "5月底阿里郎北美项目75寸7-9月份FCST大量增加，原一套EPS模具产能不足；需紧急新增 2 套复制模具；前期内部无标准化模具增开评估、申请流程，产能缺口识别...", "summary": "5月底阿里郎北美项目75寸7-9月份FCST大量增加，原一套EPS模具产能不足；需紧急新增 2 套复制模具；前期内部无标准化模具增开评估、申请流程，产能缺口识别滞后，跨部门方案评审耗时久。", "fullContent": "复盘人 章娉 负责类别 本地化 日  期 6.30  事件类型：流程缺失、需求临时变动\n事件回顾\n事件简述\n5月底阿里郎北美项目75寸7-9月份FCST大量增加，原一套EPS模具产能不足；需紧急新增 2 套复制模具；前期内部无标准化模具增开评估、申请流程，产能缺口识别滞后，跨部门方案评审耗时久。\n目标与达成\n原定目标\n7月底空运到达两套模具\n实际达成\n一套模具空运预计8月初到达，另一套海运预计8月底到达，由于FCST后移，预计不会影响客户提货\n根因分析\n直接原因\n客户FCST临时增量\n深层原因\n内部无快速评估及响应流程。前期无标准增开复制模流程。导致整体响应速度及方案评估速度较慢\n解决方案\n临时方案\n与交付运营沟通确认开模及运输方案，利用国内复制模申请OA流程安排开模\n长期措施\n统一复用国内现有复制模 OA 审批流程，，补充海外场景要求（海运、清关、），参考前期流程由销支负责；\n经验沉淀与后续追踪\n留下什么、如何闭环？\n打通显拓海外增开复制模申请流程，无需单独新建流程，直接复用国内成熟复制模审批体系，后续有流程可依\n最终模具运输到当地实现量产即可闭环\n\n物控科复盘"}, {"id": 38, "memberId": 38, "reviewer": "杨丽娟", "category": "PCB", "date": "Q2季度", "type": "永兴隆PCB交付专项复盘", "title": "永兴隆承诺月供1.2万平，5月实际达成9000平（达成率75%），6月预计仅7000平（达成率58%），产能持续下滑；排产积压已至3个月后，6月影响整机3.92...", "summary": "永兴隆承诺月供1.2万平，5月实际达成9000平（达成率75%），6月预计仅7000平（达成率58%），产能持续下滑；排产积压已至3个月后，6月影响整机3.92万台（国内3.7万、海外0.32万），7月第一周预计影响1.16万台。", "fullContent": "复盘人 杨丽娟 负责类别 PCB 日  期 Q2季度  事件类型：永兴隆PCB交付专项复盘\n事件回顾\n事件简述\n永兴隆承诺月供1.2万平，5月实际达成9000平（达成率75%），6月预计仅7000平（达成率58%），产能持续下滑；排产积压已至3个月后，6月影响整机3.92万台（国内3.7万、海外0.32万），7月第一周预计影响1.16万台。\n目标与达成\n原定目标\n按各机型整机排产计划锁定PCB物料需求，确保永兴隆对应物料按期到货，保障6-7月整机生产计划顺利执行，不因PCB欠料导致停线或排产调整\n实际达成\n经现场驻厂协调及每日跟踪，累计锁定26.4万PCS交期（满足率72.4%），剩余10.1万PCS持续跟踪投料进度。整机排产经计划端微调后，国内3.92万台影响已通过协调其他供应商产能部分消化。7月第一周1.16万台风险已提前预警，计划端已做备选排产方案，未发生整机停线。\n根因分析\n直接原因\n订单严重积压、产能挤兑（排产已排至3个月后）；上游原材持续紧缺（KB板材暂停1.5mm以上接单）；实际交付周期持续拉长（6月LT延至6周，多层板延至7周）\n深层原因\n1、系统LT与实际交付周期长期脱节，导致订单评审阶段交期判断失真；\n2、下单规则与供应现实不匹配：当前仍按建单下单+销售指定备货，无法覆盖整机30天出货期，需提前45天下单才能满足交付；\n3、永兴隆占我司双面板采购份额较大，集中度偏高，一旦出问题，整机交付全线承压。\n解决方案\n临时方案\n1、现场驻厂协调：物控现场逐料号锁定交期，达成26.4万PCS（满足率72.4%），剩余10.1万PCS每日跟踪投料进度，异常2小时内拍照反馈。\n2、商务接力跟进：物控已整理交接资料，由商务现场接力跟进，确保协调成果落地。\n3、每日跟踪机制：供应商每日在专项群同步投料进度及工序状态，物控持续跟踪落实，异常及时升级。\n长期措施\n1、下单规则调整：由按建单下单改为按预测提前45天下单，提前锁定板材及产能；\n2、加快扩点转单：加快永兴隆物料扩点至荣晖（已导入，承诺月供1万平）、旭昇（承诺5000平/月），减少对永兴隆的依赖；\n3、替代方案评估：评估1.2mm替代1.6mm板材方案的可行性与验证周期，缓解1.6mm板材紧缺压力。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n经验沉淀：\n1、系统LT必须与实际交付周期同步，避免计划持续错配。\n2、单一供应商依赖风险大，扩点需跑在前面。\n3、现场协调+商务接力是确保成果落地的有效模式。"}, {"id": 39, "memberId": 39, "reviewer": "杨丽娟", "category": "灯条", "date": "Q2季度", "type": "灯条交付风险常态化管控复盘", "title": "Q2期间，兆驰作为我司灯条主力供应商，交付持续脱期。4月首次协调风险44.4万PCS（达成率46%），5月外销异常11.4万条（达成率仅30%），6-7月阿里郎...", "summary": "Q2期间，兆驰作为我司灯条主力供应商，交付持续脱期。4月首次协调风险44.4万PCS（达成率46%），5月外销异常11.4万条（达成率仅30%），6-7月阿里郎订单新增风险12.1万台。半年内问题反复，协调效果逐次递减，“谈一谈动一动”的模式已失效，成为灯条供应最大瓶颈。", "fullContent": "复盘人 杨丽娟 负责类别 灯条 日  期 Q2季度  事件类型：灯条交付风险常态化管控复盘\n事件回顾\n事件简述\nQ2期间，兆驰作为我司灯条主力供应商，交付持续脱期。4月首次协调风险44.4万PCS（达成率46%），5月外销异常11.4万条（达成率仅30%），6-7月阿里郎订单新增风险12.1万台。半年内问题反复，协调效果逐次递减，“谈一谈动一动”的模式已失效，成为灯条供应最大瓶颈。\n目标与达成\n原定目标\n兆驰交期达成率≥80%\n实际达成\n4月首次协调达成率46%\n5月外销异常达成率30%\n6-7月阿里郎12.1万台新增风险，整体达成率持续偏低，目标未达成\n根因分析\n直接原因\n兆驰灯珠支架及芯片缺口大，我司订单未获优先分配（按下单先后顺序排位靠后）\n兆驰所用PCB交期由25天延长至35-40天，叠加内部转单流程耗时5天，LT失控\n多次承诺交期后跳票，预警缺失，回复形同虚设。\n深层原因\n1、我司采购价偏低，兆驰优先将资源分配给高毛利客户。\n2、未提前锁定灯珠支架、芯片等关键原材，兆驰长期被动接单。\n3、延期罚则未严格落地，违约成本低，导致反复跳票。\n4、长期依赖现场“谈”，对兆驰已明显失效，缺乏硬性约束手段。\n解决方案\n临时方案\n1、多次现场会议，逐料号核对交期，短期压降缺口（共计落实约25万PCS）。\n2、明确罚则：协调达成交期再次延期由供应商承担损失，满足LT仍无法交付的按实际损失开罚单。\n3、启动转单分流。\n长期措施\n1、独家扩点转单，已在实施中；\n2、商务每月与兆驰确认长周期物料库存情况后再安排订单（如芯片）\n3、将兆驰交期偏差率纳入月度评分，作为订单配额调整依据。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n兆驰的问题不是协调频次不够，而是“谈”已失效。解决路径只有两条——要么建立“份额调整+罚则执行”的硬约束机制，要么用扩点逐步替代。两条路都需要商务端深度协同，物控负责量化数据，推动决策。\n\n物控科复盘"}, {"id": 40, "memberId": 40, "reviewer": "高超", "category": "结构组", "date": "2026年7月", "type": "北美三星主板订单周期不足，集中出货，导致散热片供应总量存在风险", "title": "6月29日，北美主板订单集中建单19万台，要求于7月15日至25日期间分批交付。 因订单批量集中释放，同时散热片采购量激增、触发供应商产能预警，导致全月交付面临...", "summary": "6月29日，北美主板订单集中建单19万台，要求于7月15日至25日期间分批交付。 因订单批量集中释放，同时散热片采购量激增、触发供应商产能预警，导致全月交付面临较大缺口与交付风险。", "fullContent": "复盘人 高超 负责类别 结构组 日  期 2026年7月  事件类型：北美三星主板订单周期不足，集中出货，导致散热片供应总量存在风险\n事件回顾\n事件简述\n6月29日，北美主板订单集中建单19万台，要求于7月15日至25日期间分批交付。 因订单批量集中释放，同时散热片采购量激增、触发供应商产能预警，导致全月交付面临较大缺口与交付风险。\n目标与达成\n原定目标\n7月计划交付19万台\n实际达成\n未达成。实际交付约19万台，达成率约79%。 月度缺口约3~4万台，主要受限于散热片产能瓶颈。\n根因分析\n直接原因\n1. 业务端建单高度集中，交付周期严重不足，未预留合理的备货与爬坡时间； 2. 该项目前期仅备料了PCB与灯条，其余关键原材料（如散热片等）均未纳入备货计划，导致物料齐套率不足； 3. 客户要货周期极为紧迫，叠加独家供应商产能上限，供需矛盾突出。\n深层原因\n1. 项目需求预测波动大、稳定性不足，业务端与供应链信息传递滞后； 2. 缺乏大单集中交付的前置风险评估机制，导致供应链被动应急； 3. 关键物料供应商资源单一，抗风险能力薄弱。\n解决方案\n临时方案\n1. 紧急协调独家供应商增投机台与治具，日产能由3K提升至7K； 2. 建立日进度监控机制，每日跟踪产出与交付进度，及时预警与纠偏； 3. 实施效果：月度交付缺口由最初的15万台大幅缩小至3~4万台。\n长期措施\n1. 项目前期需从需求量、产能、供应周期、供应商资源等多维度进行综合评估，建立风险评估清单； 2. 商务端同步推进供应商扩点，引入备选资源，解决8月份及后续集中交付风险； 3. 关键物料备货策略升级为全BOM覆盖，避免局部备料造成全局瓶颈。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n建立大单集中交付预警机制，订单建单时即触发物料齐套核查与产能预判，提前识别关键物料瓶颈； 2. 关键物料备料清单需覆盖全BOM，避免局部备料造成全局供应风险；\n3. 推动核心供应商建立产能弹性储备机制，缩短紧急爬坡响应周期； 4. 推动业务端与物控端建立周度需求对齐会议，提升预测准确性。\n\n物控科复盘"}, {"id": 41, "memberId": 41, "reviewer": "高超", "category": "结构组", "date": "2026年7月", "type": "日计划准确率偏低：APS系统运算后，N+3窗口准确率17%~42%（目标80%），4~7窗口准确率20%~36%（目标50%），且7月19日（周日）数据完整性异常。", "title": "核心异常：7/19数据量骤降58%、曾令标数据完全缺失、取消订单数远超新增数。", "summary": "核心异常：7/19数据量骤降58%、曾令标数据完全缺失、取消订单数远超新增数。", "fullContent": "复盘人 高超 负责类别 结构组 日  期 2026年7月  事件类型：日计划准确率偏低：APS系统运算后，N+3窗口准确率17%~42%（目标80%），4~7窗口准确率20%~36%（目标50%），且7月19日（周日）数据完整性异常。\n事件回顾\n事件简述\n核心异常：7/19数据量骤降58%、曾令标数据完全缺失、取消订单数远超新增数。\n目标与达成\n原定目标\n1. N+3窗口（交货前3天）：日计划准确率 >= 80% 2. 4~7窗口（交货前4–7天）：日计划准确率 >= 50% 3. 数据完整性：每日导入计划数 >= 6,000条，各计划员备注数据覆盖率100%\n实际达成\nN+3窗口：   - 7/19 vs 7/18 准确率 17.15%（低于目标62.85个百分点）   - 7/18 vs 7/17 准确率 42.16%（低于目标37.84个百分点） 4~7窗口：   - 7/19 vs 7/18 准确率 20.03%（低于目标29.97个百分点）   - 7/18 vs 7/17 准确率 35.91%（低于目标14.09个百分点） 数据完整性：7/19仅2,645条（较标准缺口56%），曾令标数据为0条。 结论：所有窗口均未达标，N+3窗口偏差尤为严重。\n根因分析\n直接原因\n1. 7/19（周日）数据不完整：仅导入2,645条，较前日6,350条下降58%，周末数据导入机制缺失。 2. 曾令标计划员数据完全缺失：7/19及7/18均无曾令标备注数据，导致该计划员负责的订单无法纳入对比统计。 3. 取消订单异常激增：N+3窗口7/19稿取消964条（vs 新增943条），4~7窗口取消1,171条（vs 新增仅32条）。 4. N+3锁定区变动频繁：7/18 vs 7/17变动342条（占比18.2%），临近交货仍大幅调整，计划锁定形同虚设。\n深层原因\n第1层 — 流程缺失：周末/节假日无完整数据导入流程，导致周日数据量骤降。 第2层 — 校验缺失：APS系统未设置数据完整性自动校验机制，数据缺失时无预警、无阻断。 第3层 — 锁定失效：日计划锁定机制不完善，N+3窗口仍可大幅变动，违背\"越近交货越稳定\"的核心原则。 第4层 — 标准缺失：导入规范未统一，不同计划员数据质量差异大，无标准化作业指引。 根因总结：缺乏「数据质量门禁 + 计划冻结机制 + 导入标准化」三位一体保障体系。\n\n物控科复盘"}, {"id": 42, "memberId": 42, "reviewer": "张亚峰", "category": "背板交付", "date": "Q2季度", "type": "100寸背板交付异常", "title": "100A5H（1802-006）订单需求800片，实际喷粉529片，欠料271片。", "summary": "100A5H（1802-006）订单需求800片，实际喷粉529片，欠料271片。", "fullContent": "复盘人 张亚峰 负责类别 背板交付 日  期 Q2季度  事件类型：100寸背板交付异常\n事件回顾\n事件简述\n100A5H（1802-006）订单需求800片，实际喷粉529片，欠料271片。\n目标与达成\n原定目标\n100A5H（1802-006）4月份订单500完成交付，后增量300片4月份交付（总共800片）\n实际达成\n实际能达成529片交付，实际交付270片，截止4月22日豪顺库存成品还剩259片未叫料交付（4月22日发5片给中试部），本月交付还差276片（叫料计划在29号）。\n根因分析\n直接原因\n豪顺内部工艺信息传递偏差、销售需求变动。\n深层原因\n1、100A5H（1802-006）3月13日稿周计划的4月份需求是500片订单，豪顺将原排产800片改成550片（根据周计划调整）；\n2、100A5H（1802-006）3月20日稿周计划的4月份需求又调整回800片订单，但豪顺3月18日已经冲压完成（冲压006款550片，007款4100片,，合计冲压完成4650片），3月19日已下模，因007款3-4月份合计需求3800，007有冲压品结余300，可以满足3月20日006增量需求，故006款背板4月初未安排上线冲压；\n3、结合按单报缺需求，豪顺4月13日已经完成所有喷粉工序，006款550片，007款4100片，因该产品第一次量产，豪顺计划员信息获取有偏差，以为可以直接用（1802-007）相同结构的烤漆后背板组装替用成006款出货，故豪顺回复交期可以满足，4月21日发现实际1802-006和1802-007差异不仅是组装工序，在喷涂粉上也存在颜色差异，（1802-006喷细沙闪银粉、1802-007喷黑色砂纹漆），4月21日发现该问题无法满足新增后的300片需求，此300片按计划要求原交货计划在4月29日，因007款烤漆后无法返工成006款，故模具需重新上线生产，初步回复的排产计划是5月4日交；\n解决方案\n临时方案\n因背板外观差异无法返工满足交付，紧急插单生产满足交付；\n目前模具在线试产100A5H（1802-008），4月23日完成试产，完成试产紧急下线改机种成100A5H（1802-006），改机种1天时间；\n3、4月25日100A5H（1802-006）上线调模，预计4月28日开始冲压，29日交付剩余271片。\n长期措施\n1、需协调销售端提高需求稳定性，减少临时性加单需求；\n2、协调供应商针对新品首批需求计划增加30%的备损进行生产；\n3、督促供应商内部建立考核机制，针对首批量产产品工艺文件传达落实，明确责任，确保后续量产的交付时间节点及质量达成。\n经验沉淀与建议\n内部建议\n内部问题先将内部环节闭环，后续材料交付存在问题时计划端先找对应物控同事协调后再上浮营销端；"}, {"id": 43, "memberId": 43, "reviewer": "于霞霞", "category": "五金、螺钉/母类", "date": "2026.6.02", "type": "学习AI，运用AI，带来的便捷", "title": "6月1号加入AI专项小组，了解AI，学习AI，验证AI，使用AI。6月12号启动AI排周计划，由排产工作时间5.5H↘1.5H...", "summary": "6月1号加入AI专项小组，了解AI，学习AI，验证AI，使用AI。6月12号启动AI排周计划，由排产工作时间5.5H↘1.5H，工作效率准确增效100%。原定目标为熟悉AI发展史，探索技能，力争跟上AI运用步伐。实际10天内完成AI排周计划程序并上线运用至今，效率提升73%(5.5h⇢1.5h)，准确率99.9%。", "fullContent": "复盘人\u0007于霞霞\u0007负责类别\u0007五金、螺钉/母类\u0007日  期\u00072026.6.02\u0007\u0007事件类型：学习AI，运用AI，带来的便捷\n事件回顾\u0007事件简述\u00076月1号加入AI专项小组，了解AI，学习AI，验证AI，使用AI。\n\n6月12号启动AI排周计划，由排产工作时间5.5H↘1.5H，工作效率准确增效100%。\u0007\u0007目标与达成\n原定目标\n先熟系AI发展史，探索技能，力争跟上AI运用步伐，更好的减负，增加工作效率。\n实际达成\n10天内完成AI排周计划程序，并上线运用至今。效率提升73%(5.5h⇢1.5h)，准确率99.9%。\n根因分析\n直接原因\n ① 目标：锁定排周计划这一高频痛点场景作为首个AI落地项目，避免泛泛而学； ② 快速迭代：从学习到验证仅用12天(6/1-6/12)，边学边试； ③ 数据完整，规范：五金、螺钉/母类的周计划数据格式规范、历史数据完整，适合AI结构化处理 \n深层原因\n 1，个人层面：加入AI专项小组，具备学习意愿和变革意识，不满足于按手工计算干活 2，组织层面：公司推动AI专项小组建设，提供了系统性的学习路径和导师资源支持，使\"个人想学\"与\"组织推学\"形成合力。 3，流程层面：五金物料的排周计划本身有成熟的SOP和数据积累，为AI应用奠定了良好的流程基础 \n解决方案\n临时方案\n 上线初期用AI生成+人工复核双保险模式\n前两周每次AI输出结果均逐项核对数据，确保零差错后逐步降低复核比例至抽检。 同时保留原手工排产方式作为备用方案，确保突发变故不受影响。 （周五1.0运行后，用ZPPR023A查询未来预测物料，再AI排产）  效果：平稳过渡，未发生排产差错\n长期措施\n ① 固化AI排产模板：将验证有效的AI程序固化成标准模板，减少每次输入的重复劳动，确保输出一致性； ② 建立数据更新机制：每周五更最新需求、未清、配额，保证AI输出的时效性和准确性； ③ 推广复制：已将该方法分享给科室内其他物料组同事，协助同事完成各自物料类别的AI排周配置。 效果：截至6月底，累计运行3周无异常，每周节省约4小时.\n\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1. AI排周计划成果内部科室宣导、互相学习、测试验证、共同查询BUG推动AI程序落地。 2. 先选痛点场景→小范围验证→人工兜底过渡→全面切换的AI落地四步法经验； 3. 五金物料排周计划的AI输入/输出数据规范。\n（周五286下午4点半后的成功导入、未清、配额） 4.持续运行中，每季度回顾，如果有优化模板，便持续升级 - 验证方式：每月统计AI排周计划的准确率和节省工时，记录异常情况并改进 - 闭环状态：✓ 已闭环（6月12日上线至今稳定运行）"}, {"id": 44, "memberId": 44, "reviewer": "于霞霞", "category": "五金、螺钉/母类", "date": "2026.6.28", "type": "供应商交付异常 & 跨部门协作流程问题", "title": "物料N040103-001630-001，订单2630339ME，供应商豪顺。该物料频繁交不良，由原定6月28日延柜至7月3日出货...", "summary": "物料N040103-001630-001，订单2630339ME，供应商豪顺。该物料频繁交不良，由原定6月28日延柜至7月3日出货。跟单员在专项群公开沟通后，又私下对接供应商更改货柜日期至7月5日，全程跳过物控部门，导致物控部失去对交付节奏的把控。该物料已开会确认三次，截至7月8号厂家仍在待交付良品。", "fullContent": "复盘人\u0007于霞霞\u0007负责类别\u0007五金、螺钉/母类\u0007日  期\u00072026.6.28\u0007\u0007事件类型：供应商交付异常 & 跨部门协作流程问题\n事件回顾\n事件简述\n物料 N040103-001630-001，订单：2630339ME  供应商： 豪顺。 期间该物料频繁交不良，由原定6月28日延柜至7月3日出货。\n跟单员在专项群中明确告知：如无法按时送达，产生费用由豪顺承担，并在群内圈了物控人员，但此后未再就延柜事宜与物控进行任何私下沟通。 物控部将该异常风险上报冯部后， 跟单员转头私下对接供应商业务，告知货柜延至7月5日， 全程跳过物控部门。物控部失去对交付节奏的把控。\n此外，该物料已开会确认三次，截至当前7月8号厂家仍在待交付良品，作为外观件频繁异常，暴露出研发打样物料厂家缺乏准入规范的深层问题——从源头就已埋下隐患。\n\n目标与达成\n原定目标\n按计划6月28日走柜，确保物料按时交付产线。\n实际达成\n货柜一再延迟（6.28 → 7.3 → 7.5→ ？） 供应商交付质量无实质改善，工艺不达标（NG），需待新批次入库后重新确认产品是否合格，交付仍存不确定性。 \n根因分析\n直接原因\n1，供应商豪顺质量能力不足：频繁交不良，无法满足走柜要求，是问题的最直接因素 2，跟单员越权操作：在专项群公开沟通确认走柜期，私下另行对接供应商更改货柜日期，造成信息不对称和决策失控 3，货柜决策权归属不清：物控部上报异常后，走柜日期仍由跟单员单方面拍板，物控部对交付节奏的把控被架空\n深层原因\n1. 个人层面 跟单员在专项群公开沟通后，又私下与供应商达成不同约定，存在双重沟通、信息割裂的问题。物控部掌握的货柜信息与供应商实际执行的日期不一致，导致工作被动。\n2. 流程层面 跟单员与物控部的职责边界不清晰——缺乏一个权威的裁定机制，导致跟单员可以单方面更改走柜期，私下对接供应商确认后形成既定事实，物控部事后无从纠正。\n3. 制度层面\nA:供应商质量管理机制薄弱：一款物料频繁交不良、开会确认三次仍无改善，说明缺乏有效的供应商升级触发机制。供应商没有为持续不良承担实质性后果；\nB:研发打样物料厂家缺乏准入规范：打样阶段供应商选择无标准化流程，问题物料在打样阶段未暴露或未被重视，进入量产环节后持续异常，治标不治本。\n\n解决方案\n临时方案\n对外（供应商）：货柜日期确认权回归物控： 针对N040103-001630-001物料，明确物控部为货柜走柜日期的唯一确认方，跟单员变更日期须经物控部沟通确认后方可执行\n豪顺改善计划： 要求部品督促豪顺在一周内提交不良原因分析及改善计划，设定交付改善的硬性和考核红线，未达标则启动备选供应商\n专项沟通留痕： 所有货柜变更信息须在专项群内公开沟通并留痕，禁止私下一对一对接供应商更改关键交付信息。\n\n长期措施\n1，固化跨部门职责边界： 明确工作流程，杜绝跟单员单方面私自更改交期、绕过交付部门对接供应商。若后期再触犯，启动明确的问责机制。\n2，研发打样物料厂家需严格规范： 研发部门建立打样供应商准入标准（质量资质、交付能力、历史表现）， 从源头控制物料质量风险，实现打样→量产的质量可控过渡，避免问题物料流入量产环节。\n\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1，货柜走柜日期变更规则： 物控-跟单共同协作沟通，避免信息断层，共同保障交付100%达成\n2，供应商新料交不良升级处理流程： 由部品牵头建立\"连续N次不良→自动预警→淘汰评估or处罚\"的触发机制，防止质量问题的无限容忍；\n3，研发打样物料厂家准入标准： 部品协同研发部门制定并推行，打样→量产的质量过渡有章可循。"}, {"id": 45, "memberId": 45, "reviewer": "曹玉玺", "category": "模切件", "date": "2026.7.26", "type": "物料断供，停产预警", "title": "物料N040102-006600-001存在25号停产风险，未来一周陆续缺料总计20k。肯耐特无交付意愿...", "summary": "物料N040102-006600-001存在25号停产风险，未来一周陆续缺料总计20k。肯耐特无交付意愿并要求取消订单或转单；福壹交付10k实物但因无未清订单不能入库领用。最终协调二级供应商易涟交付4000pc、肯耐特交付5421pc，并将剩余订单转次级供应商、补单福壹，化解停产风险。", "fullContent": "复盘人\u0007曹玉玺\u0007负责类别\u0007模切件\u0007日  期\u00077.26\u0007\u0007事件类型：物料断供，停产预警\n事件回顾\n事件简述\n物料编号N040102-006600-001存在25号停产风险，未来一周陆续缺料总计20k；肯耐特无交付意愿，反馈无法交货并要求取消订单或转单友商交付；22号福壹交付10k实物，因肯耐特订单占比份额大且已下单，导致福壹无未清订单，所交实物不能入库领用。\n目标与达成\n原定目标\n物料N040102-006600-001一周内预计每天持续供应5k，满足生产需求。\n实际达成\n最终协调二级供应商易涟25号交付4000pc；\n经商务协调肯耐特陆续交付共计5421pc，同步将剩余订单转于次级供应商并补单福壹，完成入库领用，化解停产风险。\n根因分析\n直接原因\n1. 肯耐特反馈无法交货；\n2. 福壹虽交付10k实物，但因订单均已下予肯耐特，导致福壹无未清订单，所交实物不能入库领用。\n深层原因\n1. 供应商集中度过高，肯耐特订单占比大，单一供应商断供即导致整体供应中断；\n2. 供应商管理机制不够完善，对肯耐特交付能力和意愿评估不足；\n3. 订单分配与入库流程问题，福壹有实物但无未清订单导致无法入库。\n解决方案\n临时方案\n1. 协调二级供应商易涟25号交付4000pc应急；\n2. 协调肯耐特陆续交付共计5421pc；\n3. 协调商务将订单转二供供应商；\n4. 及时补单福壹完成入库领用。\n长期措施\n1. 优化供应商结构，降低单一供应商占比；\n2. 完善供应商风险评估与预警机制，对供应商交付能力和意愿进行动态监控；\n3. 建立应急物料储备机制，设置安全库存；\n4. 优化订单分配与入库流程，确保实物交付与订单状态匹配。\n经验沉淀与后续追踪\n留下什么、如何闭环？\n1. 供应商集中度风险需提前识别和分散，避免单一供应商断裂导致全盘停滞；\n2. 建立供应商应急协调机制，包括二级供应商备选和商务协调通道；\n3. 后续追踪：持续监控肯耐特交付情况，跟踪次级供应商和福壹的订单执行情况，确保供应链稳定。"}];
+var DIMENSIONS = [{"key": "d1", "name": "事件描述与目标达成", "max": 5, "weight": "5分", "desc": "事件描述是否清晰完整？原定目标与实际达成是否对比明确？影响范围是否量化？"}, {"key": "d2", "name": "根因分析深度", "max": 5, "weight": "5分", "desc": "是否区分直接原因与深层原因？是否追溯至流程/机制层面？分析逻辑是否自洽？"}, {"key": "d3", "name": "解决方案与改善措施", "max": 5, "weight": "5分", "desc": "临时方案是否有效止损？长期措施是否具体可执行？是否形成SOP/机制/台账？"}, {"key": "d4", "name": "经验沉淀与闭环追踪", "max": 5, "weight": "5分", "desc": "经验教训是否提炼可复用？是否建立闭环追踪机制？是否有明确责任人和验证方式？"}];
+var LEADER_PASSWORD = 'wkq2leader2026';
+
+// ========== LOCAL STORAGE ==========
+function lsGet(key) { try { return JSON.parse(localStorage.getItem('wkq2eval_' + key) || 'null'); } catch(e) { return null; } }
+function lsSet(key, val) { localStorage.setItem('wkq2eval_' + key, JSON.stringify(val)); }
+
+function getAllMembers() {
+  var custom = lsGet('customMembers') || [];
+  return PRESET_MEMBERS.concat(custom);
+}
+
+function getAllScores() {
+  return lsGet('scores') || {};
+}
+
+function saveScore(scoreObj) {
+  var scores = getAllScores();
+  var eid = scoreObj.evaluatorId;
+  var rid = scoreObj.reportId;
+  if (!scores[eid]) scores[eid] = {};
+  scores[eid][rid] = { total: scoreObj.d1+scoreObj.d2+scoreObj.d3+scoreObj.d4, d1:scoreObj.d1, d2:scoreObj.d2, d3:scoreObj.d3, d4:scoreObj.d4, d1_comment:scoreObj.d1_comment||'', d2_comment:scoreObj.d2_comment||'', d3_comment:scoreObj.d3_comment||'', d4_comment:scoreObj.d4_comment||'', timestamp: Date.now() };
+  lsSet('scores', scores);
+}
+
+function deleteScoreFromLS(evaluatorId, reportId) {
+  var scores = getAllScores();
+  if (scores[evaluatorId] && scores[evaluatorId][reportId]) {
+    delete scores[evaluatorId][reportId];
+    if (Object.keys(scores[evaluatorId]).length === 0) delete scores[evaluatorId];
+  }
+  lsSet('scores', scores);
+}
+
+function getCustomMembers() { return lsGet('customMembers') || []; }
+function getNextCustomId() { var cm = getCustomMembers(); var maxId = 99; cm.forEach(function(m){ if(m.id > maxId) maxId = m.id; }); return maxId + 1; }
+
+function addCustomMember(name) {
+  var cm = getCustomMembers();
+  var existing = getAllMembers().find(function(m){ return m.name === name; });
+  if (existing) return { success: true, member: existing, message: '已存在' };
+  var newMember = { id: getNextCustomId(), name: name, category: '其他' };
+  cm.push(newMember);
+  lsSet('customMembers', cm);
+  return { success: true, member: newMember };
+}
+
+function deleteCustomMemberFromLS(memberId) {
+  var cm = getCustomMembers();
+  cm = cm.filter(function(m){ return m.id !== memberId; });
+  lsSet('customMembers', cm);
+  // Also delete all scores by/from this member
+  var scores = getAllScores();
+  delete scores[memberId]; // scores given by this member
+  // Delete scores received by this member on their reports
+  Object.keys(scores).forEach(function(eid) {
+    Object.keys(scores[eid]).forEach(function(rid) {
+      var report = REPORTS.find(function(r){ return r.id === parseInt(rid); });
+      if (report && report.memberId === memberId) delete scores[eid][rid];
+    });
+  });
+  lsSet('scores', scores);
+}
+
+// ========== STATE ==========
+var currentUser = null;
+var selectedId = null;
+var isLeaderSelected = false;
+var leaderPassword = '';
+var membersData = getAllMembers();
+var reportsData = REPORTS;
+var dimensionsData = DIMENSIONS;
+
+// ========== INIT ==========
+function initApp() {
+  membersData = getAllMembers();
+  initLogin();
+}
+
+// ========== LOGIN ==========
+function initLogin() {
+  var grid = document.getElementById('nameGrid');
+  grid.innerHTML = '';
+  var loginSub = document.getElementById('loginSub');
+  if (loginSub) loginSub.textContent = '2026年第二季度 · ' + REPORTS.length + '份复盘报告 · 请选择您的身份进入评分';
+  var presetMembers = membersData.filter(function(m) { return m.id < 100; });
+  presetMembers.forEach(function(m) {
+    var card = document.createElement('div');
+    card.className = 'name-card';
+    card.setAttribute('data-id', m.id);
+    card.innerHTML = '<div class="nc-name">' + m.name + '</div><div class="nc-cat">' + m.category + '</div>';
+    card.onclick = function() { selectMember(m.id); };
+    grid.appendChild(card);
+  });
+  renderCustomMembersOnLogin();
+}
+
+function renderCustomMembersOnLogin() {
+  membersData = getAllMembers();
+  var customList = membersData.filter(function(m) { return m.id >= 100; });
+  var section = document.getElementById('customMembersSection');
+  var listEl = document.getElementById('customMembersList');
+  if (customList.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  listEl.innerHTML = '';
+  customList.forEach(function(m) {
+    var item = document.createElement('div');
+    item.className = 'custom-member-item' + (selectedId === m.id ? ' selected' : '');
+    item.setAttribute('data-id', m.id);
+    item.innerHTML = '<span class="cmi-name" onclick="selectMember(' + m.id + ')">' + m.name + '</span>' +
+      '<span style="color:#888;font-size:12px;">(' + m.category + ')</span>' +
+      '<button class="custom-member-del" onclick="deleteCustomMemberFromLogin(event,' + m.id + ')">删除</button>';
+    listEl.appendChild(item);
+  });
+}
+
+function deleteCustomMemberFromLogin(event, memberId) {
+  if (event) event.stopPropagation();
+  if (!confirm('确认删除该成员？其评分数据也将删除！')) return;
+  deleteCustomMemberFromLS(memberId);
+  membersData = getAllMembers();
+  renderCustomMembersOnLogin();
+  showToast('已删除');
+}
+
+function selectMember(id) {
+  selectedId = id;
+  isLeaderSelected = false;
+  document.querySelectorAll('.name-card').forEach(function(c) {
+    c.classList.toggle('selected', parseInt(c.getAttribute('data-id')) === id);
+  });
+  document.querySelectorAll('.custom-member-item').forEach(function(c) {
+    c.classList.toggle('selected', parseInt(c.getAttribute('data-id')) === id);
+  });
+  document.getElementById('leaderCard').classList.remove('selected');
+  var m = membersData.find(function(m) { return m.id === id; });
+  var confirmEl = document.getElementById('confirmName');
+  confirmEl.textContent = '已选择：' + m.name + '(' + m.category + ')';
+  confirmEl.classList.add('visible');
+  document.getElementById('enterBtn').classList.add('visible');
+}
+
+function selectLeader() {
+  isLeaderSelected = true; selectedId = null;
+  document.querySelectorAll('.name-card').forEach(function(c) { c.classList.remove('selected'); });
+  document.getElementById('leaderCard').classList.add('selected');
+  document.getElementById('pwdModal').classList.add('show');
+  document.getElementById('pwdInput').value = '';
+  document.getElementById('pwdError').classList.remove('show');
+  document.getElementById('pwdInput').focus();
+}
+
+function registerCustomName() {
+  var nameInput = document.getElementById('customNameInput');
+  var name = (nameInput.value || '').trim();
+  var hintEl = document.getElementById('customNameHint');
+  if (!name) { hintEl.textContent = '请输入您的姓名'; hintEl.className = 'custom-name-hint error'; return; }
+  var res = addCustomMember(name);
+  if (res.success) {
+    membersData = getAllMembers();
+    currentUser = { id: res.member.id, name: res.member.name, isLeader: false };
+    hintEl.textContent = '注册成功！'; hintEl.className = 'custom-name-hint success';
+    enterApp();
+  }
+}
+
+function cancelLeader() {
+  document.getElementById('pwdModal').classList.remove('show');
+  isLeaderSelected = false; selectedId = null;
+  document.getElementById('leaderCard').classList.remove('selected');
+  document.getElementById('confirmName').classList.remove('visible');
+  document.getElementById('enterBtn').classList.remove('visible');
+}
+
+function verifyLeader() {
+  var pwd = document.getElementById('pwdInput').value;
+  if (pwd === LEADER_PASSWORD) {
+    leaderPassword = pwd;
+    document.getElementById('pwdModal').classList.remove('show');
+    currentUser = { id:0, name:'科室领导', isLeader:true };
+    enterApp();
+  } else {
+    document.getElementById('pwdError').classList.add('show');
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdInput').focus();
+  }
+}
+
+function doLogin() {
+  if (isLeaderSelected) {
+    if (!leaderPassword) { selectLeader(); return; }
+    currentUser = { id:0, name:'科室领导', isLeader:true };
+  } else if (selectedId) {
+    var m = membersData.find(function(m) { return m.id === selectedId; });
+    currentUser = { id:m.id, name:m.name, isLeader:false };
+  } else { showToast('请先选择身份', 'error'); return; }
+  enterApp();
+}
+
+function enterApp() {
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('appView').style.display = 'block';
+  document.getElementById('userBadge').textContent = currentUser.name;
+  document.getElementById('exportBtn').style.display = 'inline-block';
+  if (currentUser.isLeader) {
+    document.getElementById('memberTabs').style.display = 'none';
+    document.getElementById('leaderTabs').style.display = 'flex';
+    renderLeaderView('matrix');
+  } else {
+    document.getElementById('memberTabs').style.display = 'flex';
+    document.getElementById('leaderTabs').style.display = 'none';
+    renderEvaluateView();
+  }
+}
+
+function doLogout() {
+  currentUser = null; selectedId = null; isLeaderSelected = false;
+  document.getElementById('appView').style.display = 'none';
+  document.getElementById('loginView').style.display = 'flex';
+  document.getElementById('exportBtn').style.display = 'none';
+  document.querySelectorAll('.name-card').forEach(function(c) { c.classList.remove('selected'); });
+  document.getElementById('leaderCard').classList.remove('selected');
+  document.getElementById('confirmName').classList.remove('visible');
+  document.getElementById('enterBtn').classList.remove('visible');
+}
+
+// ========== TAB SWITCHING ==========
+function switchTab(tab) {
+  document.querySelectorAll('#memberTabs .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  var btns = document.querySelectorAll('#memberTabs .tab-btn');
+  if (tab === 'evaluate') { btns[0].classList.add('active'); renderEvaluateView(); }
+}
+
+function switchLeaderTab(tab) {
+  document.querySelectorAll('#leaderTabs .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  var btns = document.querySelectorAll('#leaderTabs .tab-btn');
+  if (tab === 'matrix') { btns[0].classList.add('active'); renderLeaderView('matrix'); }
+  else if (tab === 'ranking') { btns[1].classList.add('active'); renderLeaderView('ranking'); }
+  else if (tab === 'members') { btns[2].classList.add('active'); renderLeaderView('members'); }
+}
+
+// ========== EVALUATE VIEW ==========
+function renderEvaluateView() {
+  membersData = getAllMembers();
+  var scores = getAllScores();
+  var myScores = scores[currentUser.id] || {};
+  var doneCount = 0;
+  var evaluableReports = reportsData.filter(function(r) { return r.memberId !== currentUser.id; });
+  evaluableReports.forEach(function(r) { if (myScores[r.id]) doneCount++; });
+  var totalEvaluable = evaluableReports.length;
+
+  var html = '<div class="progress-card"><div class="progress-bar-wrap">' +
+    '<div class="label">评分进度(需评 ' + totalEvaluable + ' 份，已评 ' + doneCount + ' 份)</div>' +
+    '<div class="progress-bar"><div class="fill" style="width:' + (totalEvaluable>0?(doneCount/totalEvaluable*100):0) + '%"></div></div></div>' +
+    '<div class="progress-stats"><div class="big">' + doneCount + '/' + totalEvaluable + '</div><div>已完成</div></div></div>' +
+    '<div class="filter-bar"><span class="filter-label">筛选：</span>' +
+    '<select id="filterMember" onchange="applyFilter()"><option value="">全部人员</option>' +
+    membersData.filter(function(m){return m.id!==currentUser.id}).map(function(m){return '<option value="'+m.id+'">'+m.name+'('+m.category+')</option>';}).join("") +
+    '</select><select id="filterStatus" onchange="applyFilter()"><option value="">全部状态</option><option value="done">已评分</option><option value="pending">未评分</option></select></div>' +
+    '<div class="report-list" id="reportList">';
+
+  evaluableReports.forEach(function(r) {
+    var score = myScores[r.id];
+    var isDone = !!score;
+    html += '<div class="report-item" data-member="' + r.memberId + '" data-status="' + (isDone?'done':'pending') + '" onclick="openEvalModal(' + r.id + ')">' +
+      '<div class="ri-status ' + (isDone?'done':'pending') + '">' + (isDone?'✓':'—') + '</div>' +
+      '<div class="ri-body"><div class="ri-title">' + r.title + '</div>' +
+      '<div class="ri-meta">' + r.reviewer + ' · ' + r.category + ' · ' + r.date + ' · ' + r.type + '</div></div>' +
+      '<div class="ri-score">' + (isDone?score.total+'分':'未评') + '</div></div>';
+  });
+
+  html += '</div>';
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function applyFilter() {
+  var member = document.getElementById('filterMember').value;
+  var status = document.getElementById('filterStatus').value;
+  document.querySelectorAll('.report-item').forEach(function(item) {
+    var show = true;
+    if (member && item.getAttribute('data-member') !== member) show = false;
+    if (status && item.getAttribute('data-status') !== status) show = false;
+    item.style.display = show ? 'flex' : 'none';
+  });
+}
+
+function showReportDetail(reportId) {
+  var r = reportsData.find(function(r) { return r.id === reportId; });
+  if (!r || !r.fullContent) { showToast('暂无完整内容', 'error'); return; }
+  var content = r.fullContent.replace(/\n/g, '<br>');
+  var html = '<div class="modal-header"><h3>' + r.reviewer + ' · ' + r.category + ' · ' + r.date + '</h3><button class="modal-close" onclick="closeDetailModal()">✕</button></div>' +
+    '<div class="modal-body detail-body"><div class="detail-meta"><span class="tag">' + r.type + '</span></div>' +
+    '<div class="detail-content">' + content + '</div></div>';
+  document.getElementById('detailModalCard').innerHTML = html;
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function closeDetailModal() { document.getElementById('detailModal').classList.remove('show'); }
+
+// ========== EVAL MODAL ==========
+var currentReportId = null;
+
+function openEvalModal(reportId) {
+  currentReportId = reportId;
+  var r = reportsData.find(function(r) { return r.id === reportId; });
+  var scores = getAllScores();
+  var existing = (scores[currentUser.id] && scores[currentUser.id][reportId]) || null;
+  var total = existing ? existing.total : null;
+
+  var html = '<div class="modal-header"><h3>评分：' + r.reviewer + ' 的复盘报告</h3><button class="modal-close" onclick="closeEvalModal()">✕</button></div>' +
+    '<div class="modal-body"><div class="report-summary">' +
+    '<div class="rs-meta">' + r.reviewer + ' · ' + r.category + ' · ' + r.date + '</div>' +
+    '<div class="rs-title">' + r.title + '</div>' +
+    '<div class="rs-desc">' + r.summary + '</div>' +
+    '<div class="rs-tags"><span class="tag">' + r.type + '</span>' +
+    '<button class="btn-text" onclick="showReportDetail(' + r.id + ')">查看完整报告内容</button></div></div>';
+
+  dimensionsData.forEach(function(dim) {
+    var val = existing ? existing[dim.key] : null;
+    html += '<div class="score-dimension">' +
+      '<div class="sd-title"><span>' + dim.name + '</span><span class="sd-weight">' + dim.weight + '</span></div>' +
+      '<div class="sd-desc">' + dim.desc + '</div><div class="sd-options">';
+    for (var i = 0; i <= dim.max; i++) {
+      html += '<div class="opt"><input type="radio" name="' + dim.key + '" id="' + dim.key + '_' + i + '" value="' + i + '"' + (val===i?' checked':'') + '>' +
+        '<label for="' + dim.key + '_' + i + '">' + i + '</label></div>';
+    }
+    html += '</div><div class="sd-comment"><textarea id="comment_' + dim.key + '" placeholder="简短评语(可选)">' + (existing && existing[dim.key+'_comment'] ? existing[dim.key+'_comment'] : '') + '</textarea></div></div>';
+  });
+
+  html += '</div><div class="modal-footer">' +
+    '<div class="mf-score">本次评分：<span class="val" id="modalTotalScore">' + (total!==null?total:'—') + '</span> / 20 分</div>' +
+    '<div class="mf-btns">' +
+    (existing ? '<button class="btn btn-danger" onclick="deleteEval()">删除评分</button>' : '') +
+    '<button class="btn btn-secondary" onclick="closeEvalModal()">取消</button>' +
+    '<button class="btn btn-primary" onclick="saveEval()">' + (existing?'修改评分':'保存评分') + '</button></div></div>';
+
+  document.getElementById('evalModalCard').innerHTML = html;
+  document.getElementById('evalModal').classList.add('show');
+
+  document.querySelectorAll('#evalModalCard input[type=radio]').forEach(function(inp) {
+    inp.addEventListener('change', updateModalTotal);
+  });
+}
+
+function updateModalTotal() {
+  var total = 0;
+  document.querySelectorAll('#evalModalCard input[type=radio]:checked').forEach(function(r) { total += parseInt(r.value); });
+  document.getElementById('modalTotalScore').textContent = total;
+}
+
+function saveEval() {
+  var scoreObj = { evaluatorId: currentUser.id, reportId: currentReportId };
+  var total = 0;
+  var allSelected = true;
+
+  dimensionsData.forEach(function(dim) {
+    var checked = document.querySelector('#evalModalCard input[name="' + dim.key + '"]:checked');
+    if (!checked) { allSelected = false; }
+    else { scoreObj[dim.key] = parseInt(checked.value); total += parseInt(checked.value); }
+    scoreObj[dim.key + '_comment'] = document.getElementById('comment_' + dim.key).value;
+  });
+
+  if (!allSelected) { showToast('请为所有维度打分', 'error'); return; }
+
+  // Check self-scoring
+  var report = reportsData.find(function(r) { return r.id === currentReportId; });
+  if (report && report.memberId === currentUser.id) { showToast('不能给自己的报告评分', 'error'); return; }
+
+  saveScore(scoreObj);
+  closeEvalModal();
+  renderEvaluateView();
+  showToast('评分已保存！本报告得分 ' + total + ' / 20 分');
+}
+
+function closeEvalModal() { document.getElementById('evalModal').classList.remove('show'); }
+
+function deleteEval() {
+  if (!currentReportId) return;
+  if (!confirm('确认删除此评分？')) return;
+  deleteScoreFromLS(currentUser.id, currentReportId);
+  closeEvalModal();
+  renderEvaluateView();
+  showToast('评分已删除');
+}
+
+// ========== MY SCORES ==========
+function renderMyScores() {
+  var scores = getAllScores();
+  var myReports = reportsData.filter(function(r) { return r.memberId === currentUser.id; });
+  var totalReceived = 0, evaluatorCount = 0;
+
+  myReports.forEach(function(r) {
+    Object.keys(scores).forEach(function(eid) {
+      if (parseInt(eid) === currentUser.id) return;
+      var s = scores[eid] && scores[eid][r.id];
+      if (s) { totalReceived += s.total; evaluatorCount++; }
+    });
+  });
+
+  var avgPerReport = evaluatorCount > 0 ? totalReceived / evaluatorCount : 0;
+  var overallScore = myReports.length > 0 ? (avgPerReport / 20 * 100) : 0;
+
+  var html = '<div class="my-scores-hero">' +
+    '<div class="ms-label">我的 Q2 综合评分(满分 100)</div>' +
+    '<div class="ms-val">' + (evaluatorCount>0?overallScore.toFixed(1):'—') + '<span class="ms-max"> / 100</span></div>' +
+    '<div class="ms-sub">基于 ' + evaluatorCount + ' 人次评分 · ' + myReports.length + ' 份报告 · 每份满分 20 分</div></div>';
+
+  if (evaluatorCount === 0) {
+    html += '<div style="text-align:center;color:#888;padding:40px;">尚无他人对您的报告评分。多人在同一设备上轮流评分后，此处将显示综合得分。</div>';
+  }
+
+  myReports.forEach(function(r) {
+    var evals = [];
+    Object.keys(scores).forEach(function(eid) {
+      if (parseInt(eid) === currentUser.id) return;
+      var s = scores[eid] && scores[eid][r.id];
+      if (s) evals.push({ evaluatorId: parseInt(eid), score: s });
+    });
+    var avgTotal = evals.length > 0 ? evals.reduce(function(s,e){return s+e.score.total},0)/evals.length : 0;
+    var avgD1 = evals.length>0 ? evals.reduce(function(s,e){return s+e.score.d1},0)/evals.length : 0;
+    var avgD2 = evals.length>0 ? evals.reduce(function(s,e){return s+e.score.d2},0)/evals.length : 0;
+    var avgD3 = evals.length>0 ? evals.reduce(function(s,e){return s+e.score.d3},0)/evals.length : 0;
+    var avgD4 = evals.length>0 ? evals.reduce(function(s,e){return s+e.score.d4},0)/evals.length : 0;
+
+    html += '<div class="my-report-card"><div class="mrc-title">' + r.title + '</div>' +
+      '<div class="mrc-meta">' + r.date + ' · ' + r.type + ' · 已获 ' + evals.length + ' 人评分</div>' +
+      '<div class="mrc-dims">' +
+      '<div class="mrc-dim"><span class="dim-name">事件描述</span><span class="dim-val">' + (evals.length>0?avgD1.toFixed(1):'—') + '<span class="dim-max">/5</span></span></div>' +
+      '<div class="mrc-dim"><span class="dim-name">根因分析</span><span class="dim-val">' + (evals.length>0?avgD2.toFixed(1):'—') + '<span class="dim-max">/5</span></span></div>' +
+      '<div class="mrc-dim"><span class="dim-name">解决方案</span><span class="dim-val">' + (evals.length>0?avgD3.toFixed(1):'—') + '<span class="dim-max">/5</span></span></div>' +
+      '<div class="mrc-dim"><span class="dim-name">经验沉淀</span><span class="dim-val">' + (evals.length>0?avgD4.toFixed(1):'—') + '<span class="dim-max">/5</span></span></div></div>' +
+      '<div class="mrc-total"><span class="total-label">本报告平均得分</span><span class="total-val">' + (evals.length>0?avgTotal.toFixed(1):'—') + '<span class="total-max"> / 20</span></span></div></div>';
+  });
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+// ========== LEADER VIEW ==========
+function renderLeaderView(mode) {
+  membersData = getAllMembers();
+  var scores = getAllScores();
+
+  if (mode === 'matrix') renderLeaderMatrix(scores);
+  else if (mode === 'ranking') renderLeaderRanking(scores);
+  else if (mode === 'members') renderLeaderMembers();
+}
+
+function renderLeaderMatrix(scores) {
+  var totalReports = reportsData.length;
+  var totalMembers = membersData.length;
+  var evaluators = Object.keys(scores).filter(function(eid) { return Object.keys(scores[eid]).length > 0; }).length;
+  var totalEvaluations = 0;
+  Object.keys(scores).forEach(function(eid) { totalEvaluations += Object.keys(scores[eid]).length; });
+
+  var html = '<div class="leader-summary">' +
+    '<div class="ls-stat"><div class="ls-val">' + totalReports + '</div><div class="ls-label">复盘报告</div></div>' +
+    '<div class="ls-stat"><div class="ls-val">' + totalMembers + '</div><div class="ls-label">参评人员</div></div>' +
+    '<div class="ls-stat"><div class="ls-val">' + evaluators + '</div><div class="ls-label">已参评人数</div></div>' +
+    '<div class="ls-stat"><div class="ls-val">' + totalEvaluations + '</div><div class="ls-label">已评次数</div></div></div>' +
+    '<div class="matrix-wrap"><table class="matrix-table"><thead><tr>' +
+    '<th style="text-align:left;min-width:180px;">报告</th>' +
+    membersData.map(function(m){return '<th>' + m.name + '</th>';}).join("") +
+    '<th style="background:#2e7d32;">平均</th></tr></thead><tbody>';
+
+  reportsData.forEach(function(r) {
+    var rowScores = [];
+    var rowHtml = '<td class="row-header">' + r.reviewer + ' · ' + r.date + '</td>';
+    membersData.forEach(function(m) {
+      if (m.id === r.memberId) { rowHtml += '<td class="cell-na">—</td>'; }
+      else {
+        var s = scores[m.id] && scores[m.id][r.id] ? scores[m.id][r.id] : null;
+        if (s) { rowScores.push(s.total); rowHtml += '<td class="cell-score">' + s.total + '</td>'; }
+        else { rowHtml += '<td style="color:#ccc;">—</td>'; }
+      }
+    });
+    var avg = rowScores.length>0 ? (rowScores.reduce(function(a,b){return a+b},0)/rowScores.length).toFixed(1) : '—';
+    rowHtml += '<td class="cell-avg">' + avg + '</td>';
+    html += '<tr>' + rowHtml + '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function renderLeaderRanking(scores) {
+  var memberScores = membersData.map(function(m) {
+    var myReports = reportsData.filter(function(r) { return r.memberId === m.id; });
+    var totalReceived = 0, evalCount = 0;
+    membersData.forEach(function(evaluator) {
+      if (evaluator.id === m.id) return;
+      myReports.forEach(function(r) {
+        var s = scores[evaluator.id] && scores[evaluator.id][r.id] ? scores[evaluator.id][r.id] : null;
+        if (s) { totalReceived += s.total; evalCount++; }
+      });
+    });
+    var avgPerReport = evalCount > 0 ? totalReceived / evalCount : 0;
+    return { member:m, evalCount:evalCount, overallScore: evalCount>0 ? (avgPerReport/20*100) : null };
+  });
+
+  memberScores.sort(function(a,b) {
+    if (a.overallScore === null) return 1; if (b.overallScore === null) return -1;
+    return b.overallScore - a.overallScore;
+  });
+
+  var html = '<div style="background:#fff;border-radius:10px;box-shadow:var(--shadow);overflow:hidden;">' +
+    '<table class="matrix-table"><thead><tr><th>排名</th><th style="text-align:left;">姓名</th><th style="text-align:left;">类别</th><th>评分人次</th><th>综合评分</th></tr></thead><tbody>';
+
+  memberScores.forEach(function(ms, idx) {
+    var medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':'';
+    var isCustom = ms.member.id >= 100;
+    var nameDisplay = ms.member.name + (isCustom ? ' <span style="font-size:11px;color:var(--warning);background:var(--warning-bg);padding:1px 6px;border-radius:3px;">新增</span>' : '');
+    html += '<tr><td style="font-weight:700;">' + (ms.overallScore!==null?(idx+1):'—') + ' ' + medal + '</td>' +
+      '<td class="row-header">' + nameDisplay + '</td>' +
+      '<td style="text-align:left;color:#888;">' + ms.member.category + '</td>' +
+      '<td>' + ms.evalCount + '</td>' +
+      '<td class="cell-score" style="font-size:16px;">' + (ms.overallScore!==null?ms.overallScore.toFixed(1):'—') + '</td></tr>';
+  });
+
+  html += '</tbody></table></div>';
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function renderLeaderMembers() {
+  var allMembers = getAllMembers();
+  var customList = allMembers.filter(function(m) { return m.id >= 100; });
+
+  var html = '<h3 style="margin-bottom:16px;color:var(--primary);">成员管理</h3>' +
+    '<div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow);">' +
+    '<div style="font-size:14px;font-weight:700;margin-bottom:8px;">预设成员(不可删除)</div>' +
+    '<div style="font-size:13px;color:var(--gray-500);">共 ' + (allMembers.length - customList.length) + ' 人</div></div>';
+
+  if (customList.length > 0) {
+    html += '<div style="background:#fff;border-radius:10px;padding:16px 20px;box-shadow:var(--shadow);">' +
+      '<div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--warning);">自定义注册成员(可删除)</div>' +
+      '<table class="matrix-table"><thead><tr><th style="text-align:left;">姓名</th><th>类别</th><th>操作</th></tr></thead><tbody>';
+    customList.forEach(function(m) {
+      html += '<tr><td class="row-header">' + m.name + '</td><td style="color:#888;">' + m.category + '</td>' +
+        '<td><button style="background:var(--danger);color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;" onclick="deleteCustomMemberLeader(' + m.id + ')">删除</button></td></tr>';
+    });
+    html += '</tbody></table></div>';
+  } else {
+    html += '<div style="text-align:center;color:#888;padding:40px;background:#fff;border-radius:10px;">暂无自定义注册成员</div>';
+  }
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function deleteCustomMemberLeader(memberId) {
+  if (!confirm('确认删除该成员及其评分数据？')) return;
+  deleteCustomMemberFromLS(memberId);
+  membersData = getAllMembers();
+  renderLeaderMembers();
+  showToast('已删除');
+}
+
+// ========== EXPORT ==========
+function exportDocument() {
+  showToast('正在生成文档...');
+  var scores = getAllScores();
+  var allMembers = getAllMembers();
+  var isLeader = currentUser && currentUser.isLeader;
+  generateDoc(isLeader, scores, allMembers);
+}
+
+function generateDoc(isLeader, scores, allMembers) {
+  var now = new Date();
+  var dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+
+  var memberScores = [];
+  allMembers.forEach(function(member) {
+    var reportsForMember = reportsData.filter(function(r) { return r.memberId === member.id; });
+    var totalScore = 0, totalWeight = 0, evaluatorsCount = 0;
+    var dimScores = { d1:0, d2:0, d3:0, d4:0 };
+    var dimCounts = { d1:0, d2:0, d3:0, d4:0 };
+
+    reportsForMember.forEach(function(report) {
+      var reportTotal = 0, reportEvals = 0;
+      Object.keys(scores).forEach(function(eid) {
+        if (parseInt(eid) === member.id) return;
+        var s = scores[eid] && scores[eid][report.id];
+        if (s) { reportTotal += s.total; reportEvals++; dimScores.d1+=s.d1; dimScores.d2+=s.d2; dimScores.d3+=s.d3; dimScores.d4+=s.d4; dimCounts.d1++; dimCounts.d2++; dimCounts.d3++; dimCounts.d4++; }
+      });
+      if (reportEvals > 0) { totalScore += reportTotal/reportEvals; totalWeight++; evaluatorsCount += reportEvals; }
+    });
+
+    var avgScore = totalWeight > 0 ? totalScore/totalWeight : null;
+    var hundredScore = avgScore !== null ? (avgScore/20*100).toFixed(1) : null;
+    memberScores.push({
+      member:member, reports:reportsForMember, avgScore:avgScore, hundredScore:hundredScore,
+      dimAvg: { d1:dimCounts.d1>0?(dimScores.d1/dimCounts.d1).toFixed(2):null, d2:dimCounts.d2>0?(dimScores.d2/dimCounts.d2).toFixed(2):null, d3:dimCounts.d3>0?(dimScores.d3/dimCounts.d3).toFixed(2):null, d4:dimCounts.d4>0?(dimScores.d4/dimCounts.d4).toFixed(2):null },
+      evaluatorsCount:evaluatorsCount
+    });
+  });
+
+  memberScores.sort(function(a,b) {
+    if (a.hundredScore===null && b.hundredScore===null) return 0;
+    if (a.hundredScore===null) return 1; if (b.hundredScore===null) return -1;
+    return parseFloat(b.hundredScore) - parseFloat(a.hundredScore);
+  });
+
+  var totalEvaluations = 0;
+  Object.keys(scores).forEach(function(eid) { totalEvaluations += Object.keys(scores[eid]).length; });
+  var evaluators = Object.keys(scores).filter(function(eid) { return Object.keys(scores[eid]).length > 0; }).length;
+
+  var doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>物控科Q2复盘互评报告</title>' +
+    '<style>body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:40px;color:#333;max-width:1000px;margin:0 auto;}' +
+    'h1{font-size:22px;color:#2563eb;border-bottom:2px solid #2563eb;padding-bottom:10px;}' +
+    'h2{font-size:16px;color:#1e40af;margin-top:30px;}' +
+    'table{width:100%;border-collapse:collapse;margin-top:12px;font-size:12px;}' +
+    'th{background:#2563eb;color:#fff;padding:8px 10px;text-align:center;}' +
+    'td{border:1px solid #ddd;padding:6px 10px;text-align:center;}td.name{text-align:left;font-weight:600;}' +
+    'tr:nth-child(even){background:#f8fafc;}.section{margin-bottom:30px;}' +
+    '@media print{body{padding:20px;}h1{font-size:18px;}table{font-size:10px;}}</style></head><body>';
+
+  doc += '<h1>物控科 Q2 复盘互评报告</h1>' +
+    '<div style="font-size:12px;color:#888;margin-bottom:20px;">生成：' + dateStr + ' | 参评：' + evaluators + '人 | 总评分：' + totalEvaluations + '次 | 报告：' + reportsData.length + '份</div>';
+
+  doc += '<div class="section"><h2>综合排名(百分制)</h2><table><thead><tr><th>排名</th><th>姓名</th><th>类别</th><th>综合得分</th>' +
+    '<th>事件描述</th><th>根因分析</th><th>解决方案</th><th>经验沉淀</th><th>获评次数</th></tr></thead><tbody>';
+
+  memberScores.forEach(function(ms, idx) {
+    if (ms.hundredScore === null) return;
+    doc += '<tr><td>' + (idx+1) + '</td><td class="name">' + ms.member.name + '</td><td>' + ms.member.category + '</td>' +
+      '<td style="font-weight:700;">' + ms.hundredScore + '</td>' +
+      '<td>' + (ms.dimAvg.d1||'—') + '</td><td>' + (ms.dimAvg.d2||'—') + '</td><td>' + (ms.dimAvg.d3||'—') + '</td><td>' + (ms.dimAvg.d4||'—') + '</td>' +
+      '<td>' + ms.evaluatorsCount + '</td></tr>';
+  });
+
+  doc += '</tbody></table></div></body></html>';
+
+  var win = window.open('', '_blank');
+  if (win) { win.document.open(); win.document.write(doc); win.document.close(); showToast('文档已打开，可Ctrl+P打印或Ctrl+S保存'); }
+  else { var blob = new Blob([doc], {type:'text/html;charset=utf-8'}); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href=url; a.download='物控科Q2互评报告.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); showToast('已下载'); }
+}
+
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type === 'error' ? ' error' : '');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 3000);
+}
+
+// ========== START ==========
+initApp();
+
+document.getElementById('evalModal').addEventListener('click', function(e) { if (e.target === this) closeEvalModal(); });
+document.getElementById('detailModal').addEventListener('click', function(e) { if (e.target === this) closeDetailModal(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeEvalModal(); closeDetailModal(); } });
+document.getElementById('pwdInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') verifyLeader(); });
+</script>
+</body>
+</html>
